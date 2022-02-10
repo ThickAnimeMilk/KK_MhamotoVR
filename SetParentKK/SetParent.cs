@@ -241,10 +241,11 @@ namespace SetParentKK
 						hideCanvas = true;
 						hideCount = 0f;
 
-						//Custom HipVRCode:
-						PushSetParentButton(true);
-						hFlag.mode = HFlag.EMode.sonyu;
-						StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));
+						//Custom MhamotoVR code:
+						PushSetParentButton(true);															// Parent girl to left controller
+						hFlag.mode = HFlag.EMode.sonyu;	
+						StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
+						SetP(true);																			// Necessary to stop the girl from drifting away from our controller
 					}
 				}
 				else
