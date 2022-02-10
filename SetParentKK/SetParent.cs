@@ -237,7 +237,8 @@ namespace SetParentKK
 					hideCount += Time.deltaTime;
 					if (hideCount >= 1f)
 					{
-						hideCanvas = !hideCanvas;
+						//hideCanvas = !hideCanvas;
+						hideCanvas = true;
 						hideCount = 0f;
 
 						//Custom HipVRCode:
@@ -688,7 +689,10 @@ namespace SetParentKK
 		private void SetParentToController (GameObject parentDummy, GameObject target, bool hideModel, bool notParentSide = false)
 		{
 			GameObject controller = ParentSideController(notParentSide);
+
 			
+
+
 			parentDummy.transform.parent = controller.transform;
 
 			if (hideModel)
@@ -700,8 +704,9 @@ namespace SetParentKK
 					controller.transform.Find("ControllerCollider").GetComponent<SphereCollider>().enabled = false;
 				}		
 			}
-					
-			parentDummy.transform.position = target.transform.position;
+			// MhamotoVR: get rid of the offset between controller and girl.
+			parentDummy.transform.position = controller.transform.position;
+			//parentDummy.transform.position = target.transform.position;
 			parentDummy.transform.rotation = target.transform.rotation;
 		}
 
