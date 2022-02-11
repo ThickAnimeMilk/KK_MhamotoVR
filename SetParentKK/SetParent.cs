@@ -241,16 +241,7 @@ namespace SetParentKK
 						hideCanvas = true;
 						hideCount = 0f;
 
-						//Custom MhamotoVR code:
-						PushSetParentButton(true);															// Parent girl to left controller
-						hFlag.mode = HFlag.EMode.sonyu;	
-						StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
-						SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
-
-						ControllerMhamoto = ParentSideController(false);
-						ControllerInitState.transform.rotation = ControllerMhamoto.transform.rotation;             // This will be equal to the "up" rotation of the hip.
-
-						MhamotoStarted = true;
+						InitMhamotoSync();
 					}
 				}
 				else
@@ -258,34 +249,9 @@ namespace SetParentKK
 					hideCount = 0f;
 				}
 
-				if (MhamotoStarted)		// Every frame, when Mhamoto is initialized by holding the B button for a second.
+				if (MhamotoStarted)		// Every frame, after Mhamoto is initialized by holding the B button for a second.
                 {
-					
-					//Controller = ParentSideController(false);
-					Quaternion rotationDelta = Quaternion.FromToRotation(ControllerInitState.transform.forward, ControllerMhamoto.transform.forward);
-
-					var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
-					myLogSource.LogInfo(rotationDelta.eulerAngles);
-					BepInEx.Logging.Logger.Sources.Remove(myLogSource);
-
-					if((rotationDelta.eulerAngles.y > 30f) && (rotationDelta.eulerAngles.y < 90f))
-					{
-						if (LockedPose != 2)
-						{
-							StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
-							SetP(true);
-							LockedPose = 2;
-						}
-					}
-					else
-                    {
-						if (LockedPose != 1)
-                        {
-							StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
-							SetP(true);
-							LockedPose = 1;
-						}
-                    }
+					MhamotoSync();
 				}
 
 				//Make floating menu follow and rotate around female
@@ -893,6 +859,93 @@ namespace SetParentKK
 			return false;
 		}
 
+		private void InitMhamotoSync ()
+        {
+			// Parent and set initial pose
+			PushSetParentButton(true);                                                          // Parent girl to left controller
+			hFlag.mode = HFlag.EMode.sonyu;
+			StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
+			SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
+
+
+			// Set controller initial reference transform
+			ControllerMhamoto = ParentSideController(false);
+			ControllerInitState.transform.rotation = ControllerMhamoto.transform.rotation;
+
+
+			// Set HMD and hip abstract reference transforms (for determining girl pose later)
+			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
+			HMDAbstraction.transform.rotation = Quaternion.LookRotation(CameraForwardNoUp,Vector3.up);
+			// Hip is supposed to stand opposite of player on init.
+			HipAbstraction.transform.rotation = Quaternion.LookRotation(- HMDAbstraction.transform.forward, Vector3.up);    
+			// Now rotate it 45° around HMD right and up, so we can get a nice reference vector for determining the girl's pose.
+			HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(45, HMDAbstraction.transform.right) * Quaternion.AngleAxis(45, HMDAbstraction.transform.up);
+
+			HipAbstractionInitState.transform.rotation = HipAbstraction.transform.rotation;  // Store the initial value for processing later
+
+
+
+			MhamotoStarted = true;
+		}
+
+		private void MhamotoSync ()
+        {
+			//Get controller relative rotation compared to start transform
+			Quaternion rotationDelta = Quaternion.FromToRotation(ControllerInitState.transform.forward, ControllerMhamoto.transform.forward);
+
+			HipAbstraction.transform.rotation = HipAbstractionInitState.transform.rotation * rotationDelta;
+
+			// Update HMD abstract reference transform
+			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
+			HMDAbstraction.transform.rotation = Quaternion.LookRotation(CameraForwardNoUp, Vector3.up);
+
+			
+
+			// Get Dot products, for determining in which pose quadrant we are in.
+			float PoseVectorDotForwardUp = Vector3.Dot(HipAbstraction.transform.forward, HMDAbstraction.transform.up);
+			float PoseVectorDotForwardRight = Vector3.Dot(HipAbstraction.transform.forward, HMDAbstraction.transform.right);
+			float PoseVectorDotForwardForward = Vector3.Dot(HipAbstraction.transform.forward, HMDAbstraction.transform.forward);
+
+			float PoseVectorDotUpUp = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.up);
+			float PoseVectorDotUpRight = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.right);
+			float PoseVectorDotUpForward = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.forward);
+
+			// Logging for debugging
+			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
+			myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
+			myLogSource.LogInfo(PoseVectorDotForwardUp);
+			myLogSource.LogInfo(PoseVectorDotForwardRight);
+			myLogSource.LogInfo(PoseVectorDotForwardForward);
+			/*
+			myLogSource.LogInfo("PoseVectorDot Up      Up, right, forward: ");
+			myLogSource.LogInfo(PoseVectorDotUpUp);
+			myLogSource.LogInfo(PoseVectorDotUpRight);
+			myLogSource.LogInfo(PoseVectorDotUpForward);
+			*/
+			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
+
+			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward < 0))
+            {
+				if (LockedPose != 1)
+				{
+					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
+					SetP(true);
+					LockedPose = 1;
+				}
+			}
+
+			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
+			{
+				if (LockedPose != 2)
+				{
+					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
+					SetP(true);
+					LockedPose = 2;
+				}
+			}
+
+		}
+
 		/// <summary>
 		/// Returns the controller that's acting as parent.
 		/// </summary>
@@ -1019,6 +1072,12 @@ namespace SetParentKK
 		internal GameObject ControllerInitState = new GameObject("ControllerInitState");
 
 		internal GameObject ControllerMhamoto = new GameObject();
+
+		internal GameObject HipAbstraction = new GameObject("HipAbstraction");
+
+		internal GameObject HipAbstractionInitState = new GameObject("HipAbstractionInitState");
+
+		internal GameObject HMDAbstraction = new GameObject("HMDAbstraction");
 
 		private int LockedPose = 1;
 

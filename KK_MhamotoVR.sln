@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SetParentKK", "SetParentKK\SetParentKK.csproj", "{F561250A-A941-41DF-B90D-26B8E054EDED}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KK_MhamotoVR", "SetParentKK\KK_MhamotoVR.csproj", "{F561250A-A941-41DF-B90D-26B8E054EDED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2A8B68FB-27A3-41E7-A542-323A8BD8E1AD}
 	EndGlobalSection
 EndGlobal
