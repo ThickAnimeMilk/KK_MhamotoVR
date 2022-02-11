@@ -245,12 +245,47 @@ namespace SetParentKK
 						PushSetParentButton(true);															// Parent girl to left controller
 						hFlag.mode = HFlag.EMode.sonyu;	
 						StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
-						SetP(true);																			// Necessary to stop the girl from drifting away from our controller
+						SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
+
+						ControllerMhamoto = ParentSideController(false);
+						ControllerInitState.transform.rotation = ControllerMhamoto.transform.rotation;             // This will be equal to the "up" rotation of the hip.
+
+						MhamotoStarted = true;
 					}
 				}
 				else
 				{
 					hideCount = 0f;
+				}
+
+				if (MhamotoStarted)		// Every frame, when Mhamoto is initialized by holding the B button for a second.
+                {
+					
+					//Controller = ParentSideController(false);
+					Quaternion rotationDelta = Quaternion.FromToRotation(ControllerInitState.transform.forward, ControllerMhamoto.transform.forward);
+
+					var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
+					myLogSource.LogInfo(rotationDelta.eulerAngles);
+					BepInEx.Logging.Logger.Sources.Remove(myLogSource);
+
+					if((rotationDelta.eulerAngles.y > 30f) && (rotationDelta.eulerAngles.y < 90f))
+					{
+						if (LockedPose != 2)
+						{
+							StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
+							SetP(true);
+							LockedPose = 2;
+						}
+					}
+					else
+                    {
+						if (LockedPose != 1)
+                        {
+							StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
+							SetP(true);
+							LockedPose = 1;
+						}
+                    }
 				}
 
 				//Make floating menu follow and rotate around female
@@ -978,5 +1013,15 @@ namespace SetParentKK
 		internal bool parentIsLeft;
 
 		private float[] lastTriggerRelease = new float[4] { 0, 0 ,0 ,0};
+
+		private bool MhamotoStarted = false;
+
+		internal GameObject ControllerInitState = new GameObject("ControllerInitState");
+
+		internal GameObject ControllerMhamoto = new GameObject();
+
+		private int LockedPose = 1;
+
+
 	}
 }
