@@ -6,6 +6,7 @@ using Illusion.Component.Correct;
 using UnityEngine;
 using HarmonyLib;
 using RootMotion.FinalIK;
+using VRTK;
 using BepInEx;
 using BepInEx.Logging;
 using static SetParentKK.KK_SetParentVR;
@@ -880,11 +881,9 @@ namespace SetParentKK
 			// Hip is supposed to stand opposite of player on init.
 			HipAbstraction.transform.rotation = Quaternion.LookRotation(- HMDAbstraction.transform.forward, Vector3.up);    
 			// Now rotate it 45° around HMD right and up, so we can get a nice reference vector for determining the girl's pose.
-			HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(45, HMDAbstraction.transform.right) * Quaternion.AngleAxis(45, HMDAbstraction.transform.up);
+			HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(315, HMDAbstraction.transform.right) * Quaternion.AngleAxis(45, HMDAbstraction.transform.up);
 
 			HipAbstractionInitState.transform.rotation = HipAbstraction.transform.rotation;  // Store the initial value for processing later
-
-
 
 			MhamotoStarted = true;
 		}
@@ -895,12 +894,18 @@ namespace SetParentKK
 			Quaternion rotationDelta = Quaternion.FromToRotation(ControllerInitState.transform.forward, ControllerMhamoto.transform.forward);
 
 			HipAbstraction.transform.rotation = HipAbstractionInitState.transform.rotation * rotationDelta;
+			HipAbstraction.transform.position = ControllerMhamoto.transform.position;		// For debugging laser pointer
 
 			// Update HMD abstract reference transform
 			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
 			HMDAbstraction.transform.rotation = Quaternion.LookRotation(CameraForwardNoUp, Vector3.up);
 
-			
+			HMDAbstraction.transform.position = cameraEye.transform.position;       // For debugging laser pointer
+
+			// Debugging line renders
+			DrawLine(HipAbstraction.transform.position, HipAbstraction.transform.position + HipAbstraction.transform.forward * 100, Color.red);
+			DrawLine(HMDAbstraction.transform.position, HMDAbstraction.transform.position + HMDAbstraction.transform.forward * 100, Color.white);
+
 
 			// Get Dot products, for determining in which pose quadrant we are in.
 			float PoseVectorDotForwardUp = Vector3.Dot(HipAbstraction.transform.forward, HMDAbstraction.transform.up);
@@ -980,7 +985,7 @@ namespace SetParentKK
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n10"));        //Change girl to ReverseCowgirl pose
 					SetP(true);
 					LockedPose = PoseType.ReverseCowgirl;
-					myLogSource.LogInfo("Entered Cowgirl");
+					myLogSource.LogInfo("Entered ReverseCowgirl");
 					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
 					myLogSource.LogInfo(PoseVectorDotForwardUp);
 					myLogSource.LogInfo(PoseVectorDotForwardRight);
@@ -991,6 +996,29 @@ namespace SetParentKK
 			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 
 		}
+
+
+
+		void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.01f)
+		{
+			GameObject myLine = new GameObject();
+			myLine.transform.position = start;
+			myLine.AddComponent<LineRenderer>();
+			LineRenderer lr = myLine.GetComponent<LineRenderer>();
+			//lr.material = new Material(Shader.Find("Particles/Alpha Blended Premultiply"));
+			lr.material = new Material(Shader.Find("Hidden/Internal-Colored")); 
+			//lr.SetColors(color, color);
+			lr.startColor = color;
+			lr.endColor = color;
+			//lr.SetWidth(0.1f, 0.1f);
+			lr.startWidth = 0.1f;
+			lr.endWidth = 0.1f;
+			lr.SetPosition(0, start);
+			lr.SetPosition(1, end);
+			GameObject.Destroy(myLine, duration);
+		}
+
+
 
 		/// <summary>
 		/// Returns the controller that's acting as parent.

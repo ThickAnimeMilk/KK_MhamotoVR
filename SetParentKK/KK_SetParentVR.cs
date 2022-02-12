@@ -205,8 +205,6 @@ namespace SetParentKK
 			StrongMotionThreshold = Config.Bind<float>(s, "Strong Motion Threshold", 0.04f, new ConfigDescription("If the movement range of the controller exceeds this threshold, animation will switch to strong motion. Unit in meters", new AcceptableValueRange<float>(0f, float.MaxValue)));
 			WeakMotionThreshold = Config.Bind<float>(s, "Weak Motion Threshold", 0.03f, new ConfigDescription("If the movement range of the controller stays within this threshold for 1.5 seconds, animation will switch to weak motion. Unit in meters", new AcceptableValueRange<float>(0f, float.MaxValue)));
 
-			Logger.LogInfo("SetParentVR Config bind code passed!");
-
 			if (!Application.dataPath.EndsWith("KoikatuVR_Data"))
 				return;
 
