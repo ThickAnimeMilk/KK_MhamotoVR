@@ -865,6 +865,7 @@ namespace SetParentKK
 			PushSetParentButton(true);                                                          // Parent girl to left controller
 			hFlag.mode = HFlag.EMode.sonyu;
 			StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
+			LockedPose = PoseType.Carrying;
 			SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
 
 
@@ -912,37 +913,82 @@ namespace SetParentKK
 
 			// Logging for debugging
 			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
-			myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
-			myLogSource.LogInfo(PoseVectorDotForwardUp);
-			myLogSource.LogInfo(PoseVectorDotForwardRight);
-			myLogSource.LogInfo(PoseVectorDotForwardForward);
+			//myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
+			//myLogSource.LogInfo(PoseVectorDotForwardUp);
+			//myLogSource.LogInfo(PoseVectorDotForwardRight);
+			//myLogSource.LogInfo(PoseVectorDotForwardForward);
 			/*
 			myLogSource.LogInfo("PoseVectorDot Up      Up, right, forward: ");
 			myLogSource.LogInfo(PoseVectorDotUpUp);
 			myLogSource.LogInfo(PoseVectorDotUpRight);
 			myLogSource.LogInfo(PoseVectorDotUpForward);
 			*/
-			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
+			//myLogSource.LogInfo("Left Controller world pos: ");
+			//myLogSource.LogInfo(ControllerMhamoto.transform.position);
+
+			
 
 			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward < 0))
             {
-				if (LockedPose != 1)
+				if (LockedPose != PoseType.Carrying)
 				{
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
 					SetP(true);
-					LockedPose = 1;
+					LockedPose = PoseType.Carrying;
+					myLogSource.LogInfo("Entered Carrying");
+					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
+					myLogSource.LogInfo(PoseVectorDotForwardUp);
+					myLogSource.LogInfo(PoseVectorDotForwardRight);
+					myLogSource.LogInfo(PoseVectorDotForwardForward);
+				}
+			}
+
+			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward > 0))
+			{
+				if (LockedPose != PoseType.Doggy)
+				{
+					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
+					SetP(true);
+					LockedPose = PoseType.Doggy;
+					myLogSource.LogInfo("Entered Doggy");
+					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
+					myLogSource.LogInfo(PoseVectorDotForwardUp);
+					myLogSource.LogInfo(PoseVectorDotForwardRight);
+					myLogSource.LogInfo(PoseVectorDotForwardForward);
+				}
+			}
+
+			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
+			{
+				if (LockedPose != PoseType.Missionary)
+				{
+					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_00"));        //Change girl to Missionary pose
+					SetP(true);
+					LockedPose = PoseType.Missionary;
+					myLogSource.LogInfo("Entered Missionary");
+					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
+					myLogSource.LogInfo(PoseVectorDotForwardUp);
+					myLogSource.LogInfo(PoseVectorDotForwardRight);
+					myLogSource.LogInfo(PoseVectorDotForwardForward);
 				}
 			}
 
 			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
 			{
-				if (LockedPose != 2)
+				if (LockedPose != PoseType.ReverseCowgirl)
 				{
-					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
+					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n10"));        //Change girl to ReverseCowgirl pose
 					SetP(true);
-					LockedPose = 2;
+					LockedPose = PoseType.ReverseCowgirl;
+					myLogSource.LogInfo("Entered Cowgirl");
+					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
+					myLogSource.LogInfo(PoseVectorDotForwardUp);
+					myLogSource.LogInfo(PoseVectorDotForwardRight);
+					myLogSource.LogInfo(PoseVectorDotForwardForward);
 				}
 			}
+
+			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 
 		}
 
@@ -1079,7 +1125,16 @@ namespace SetParentKK
 
 		internal GameObject HMDAbstraction = new GameObject("HMDAbstraction");
 
-		private int LockedPose = 1;
+		internal enum PoseType
+		{
+			Carrying,
+			Doggy,
+			Missionary,
+			Cowgirl,
+			ReverseCowgirl,
+			Spooning
+		}
+		PoseType LockedPose;
 
 
 	}
