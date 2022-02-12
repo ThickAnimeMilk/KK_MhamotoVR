@@ -881,7 +881,7 @@ namespace SetParentKK
 			// Hip is supposed to stand opposite of player on init.
 			HipAbstraction.transform.rotation = Quaternion.LookRotation(- HMDAbstraction.transform.forward, Vector3.up);    
 			// Now rotate it 45° around HMD right and up, so we can get a nice reference vector for determining the girl's pose.
-			HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(315, HMDAbstraction.transform.right) * Quaternion.AngleAxis(45, HMDAbstraction.transform.up);
+			HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(45, HMDAbstraction.transform.right) * Quaternion.AngleAxis(315, HMDAbstraction.transform.up);
 
 			HipAbstractionInitState.transform.rotation = HipAbstraction.transform.rotation;  // Store the initial value for processing later
 
@@ -891,7 +891,8 @@ namespace SetParentKK
 		private void MhamotoSync ()
         {
 			//Get controller relative rotation compared to start transform
-			Quaternion rotationDelta = Quaternion.FromToRotation(ControllerInitState.transform.forward, ControllerMhamoto.transform.forward);
+			//Quaternion rotationDelta = Quaternion.FromToRotation(ControllerInitState.transform.forward, ControllerMhamoto.transform.forward);
+			Quaternion rotationDelta =  ControllerMhamoto.transform.rotation * Quaternion.Inverse(ControllerInitState.transform.rotation);
 
 			HipAbstraction.transform.rotation = HipAbstractionInitState.transform.rotation * rotationDelta;
 			HipAbstraction.transform.position = ControllerMhamoto.transform.position;		// For debugging laser pointer
@@ -903,8 +904,8 @@ namespace SetParentKK
 			HMDAbstraction.transform.position = cameraEye.transform.position;       // For debugging laser pointer
 
 			// Debugging line renders
-			DrawLine(HipAbstraction.transform.position, HipAbstraction.transform.position + HipAbstraction.transform.forward * 100, Color.red);
-			DrawLine(HMDAbstraction.transform.position, HMDAbstraction.transform.position + HMDAbstraction.transform.forward * 100, Color.white);
+			//DrawLine(HipAbstraction.transform.position, HipAbstraction.transform.position + HipAbstraction.transform.forward * 100, Color.red);
+			//DrawLine(HMDAbstraction.transform.position, HMDAbstraction.transform.position + HMDAbstraction.transform.forward * 100, Color.white);
 
 
 			// Get Dot products, for determining in which pose quadrant we are in.
