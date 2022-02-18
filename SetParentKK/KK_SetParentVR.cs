@@ -171,7 +171,6 @@ namespace SetParentKK
 
 		private void Start()
 		{
-			//LoadFromModPref();
 			const string s = "MySettings";
 
 			Finishcount = Config.Bind<float>(s, "Autofinish Timer", 0f,new ConfigDescription("When the girl's excitement gauge is above the cum threshold (70), she will cum after this set number of seconds Set this to 0 to disable the feature", new AcceptableValueRange<float>(0f, float.MaxValue)));
@@ -208,46 +207,9 @@ namespace SetParentKK
 			if (!Application.dataPath.EndsWith("KoikatuVR_Data"))
 				return;
 
-			//HarmonyInstance harmony = HarmonyInstance.Create(GUID);
 			var harmony = new HarmonyLib.Harmony(GUID);
 			harmony.PatchAll(typeof(Hooks));	
 		}
-
-		/*private void LoadFromModPref()
-		{
-			Finishcount = new ConfigWrapper<float>(nameof(Finishcount), this, 0f);
-			SetParentMode = new ConfigWrapper<ParentMode>(nameof(SetParentMode), this, ParentMode.PositionAndAnimation);		
-			DisableParentInput = new ConfigWrapper<bool>(nameof(DisableParentInput), this, true);
-			StretchLimitArms = new ConfigWrapper<float>(nameof(StretchLimitArms), this, 0.5f);
-			StretchLimitLegs = new ConfigWrapper<float>(nameof(StretchLimitLegs), this, 0.7f);
-			MenuUpProximity = new ConfigWrapper<float>(nameof(MenuUpProximity), this, 0.25f);
-			SetControllerCollider = new ConfigWrapper<bool>(nameof(SetControllerCollider), this, true);
-			GazeControl = new ConfigWrapper<bool>(nameof(GazeControl), this, false);
-			GropeHandsDisplay = new ConfigWrapper<HideHandMode>(nameof(GropeHandsDisplay), this, HideHandMode.Auto);
-			MenuHideDefault = new ConfigWrapper<bool>(nameof(MenuHideDefault), this, true);
-			HideParentConAlways = new ConfigWrapper<bool>(nameof(HideParentConAlways), this, true);
-			SetMaleFeetCollider = new ConfigWrapper<bool>(nameof(SetMaleFeetCollider), this, true);
-			SyncMaleHands = new ConfigWrapper<bool>(nameof(SyncMaleHands), this, true);
-			SetParentMale = new ConfigWrapper<bool>(nameof(SetParentMale), this, true);
-			CalcController = new ConfigWrapper<ControllerAnimMode>(nameof(CalcController), this, ControllerAnimMode.SetParentController);
-
-			LimbReleaseKey = new SavedKeyboardShortcut(nameof(LimbReleaseKey), this, new KeyboardShortcut(KeyCode.None));
-			SetParentToggle = new SavedKeyboardShortcut(nameof(SetParentToggle), this, new KeyboardShortcut(KeyCode.None));
-			MaleFeetToggle = new SavedKeyboardShortcut(nameof(MaleFeetToggle), this, new KeyboardShortcut(KeyCode.None));
-
-			AnimMaxThreshold = new ConfigWrapper<float>(nameof(AnimMaxThreshold), this, 0.23f);
-			AnimStartThreshold = new ConfigWrapper<float>(nameof(AnimStartThreshold), this, 0.02f);
-			MoveCoordinatePoolSize = new ConfigWrapper<int>(nameof(MoveCoordinatePoolSize), this, 30);
-			MoveDistancePoolSize = new ConfigWrapper<int>(nameof(MoveDistancePoolSize), this, 55);
-			MaleYaw = new ConfigWrapper<bool>(nameof(MaleYaw), this, true);
-			ParentPart = new ConfigWrapper<BodyPart>(nameof(ParentPart), this, BodyPart.Ass);
-			TrackingMode = new ConfigWrapper<bool>(nameof(TrackingMode), this, true);
-			StrongThresholdMultiplier = new ConfigWrapper<float>(nameof(StrongThresholdMultiplier), this, 1.1f);
-			StrongMotionThreshold = new ConfigWrapper<float>(nameof(StrongMotionThreshold), this, 0.04f);
-			WeakMotionThreshold = new ConfigWrapper<float>(nameof(WeakMotionThreshold), this, 0.03f);		
-		
-		}
-		*/
 
 
 		public enum ParentMode

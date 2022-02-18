@@ -708,7 +708,7 @@ namespace SetParentKK
 				}		
 			}
 			// MhamotoVR: get rid of the offset between controller and girl.
-			parentDummy.transform.position = controller.transform.position;
+			parentDummy.transform.position = controller.transform.position - BellyButtonOffset;
 			//parentDummy.transform.position = target.transform.position;
 			parentDummy.transform.rotation = target.transform.rotation;
 		}
@@ -862,17 +862,34 @@ namespace SetParentKK
 
 		private void InitMhamotoSync ()
         {
+			//Controller that presses B
+			InitController = ParentSideController(true);
+			// Set left controller initial reference transform
+			ControllerMhamoto = ParentSideController(false);
+			ControllerInitState.transform.rotation = ControllerMhamoto.transform.rotation;
+
+			//Calculate the offset between parneted controller and bellybutton
+			BellyButtonOffset = InitController.transform.position - ControllerMhamoto.transform.position;
+
 			// Parent and set initial pose
-			PushSetParentButton(true);                                                          // Parent girl to left controller
+			PushSetParentButton(true);                                                    // Parent girl to left controller
+			var scene = FindObjectOfType<VRHScene>();
+			sonyu = Traverse.Create(scene).Field("lstProc").GetValue<List<HActionBase>>().OfType<HSonyu>().FirstOrDefault();
+			hFlag.click = HFlag.ClickKind.modeChange;
 			hFlag.mode = HFlag.EMode.sonyu;
+			hFlag.nowAnimationInfo.nameAnimation = "khs_f_02";
+			hFlag.nowAnimStateName = "WLoop";
+			//hFlag.click = HFlag.ClickKind.slow;
+			hFlag.click = HFlag.ClickKind.actionChange;
+			//hSprite.SetSonyuStart();
+			//hSprite.OnInsertNoVoiceClick();
 			StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
 			LockedPose = PoseType.Carrying;
+			//PushSetParentButton(true);
 			SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
 
 
-			// Set controller initial reference transform
-			ControllerMhamoto = ParentSideController(false);
-			ControllerInitState.transform.rotation = ControllerMhamoto.transform.rotation;
+			
 
 
 			// Set HMD and hip abstract reference transforms (for determining girl pose later)
@@ -895,7 +912,7 @@ namespace SetParentKK
 			Quaternion rotationDelta =  ControllerMhamoto.transform.rotation * Quaternion.Inverse(ControllerInitState.transform.rotation);
 
 			HipAbstraction.transform.rotation = HipAbstractionInitState.transform.rotation * rotationDelta;
-			HipAbstraction.transform.position = ControllerMhamoto.transform.position;		// For debugging laser pointer
+			HipAbstraction.transform.position = ControllerMhamoto.transform.position - BellyButtonOffset;		// For debugging laser pointer
 
 			// Update HMD abstract reference transform
 			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
@@ -919,20 +936,7 @@ namespace SetParentKK
 
 			// Logging for debugging
 			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
-			//myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
-			//myLogSource.LogInfo(PoseVectorDotForwardUp);
-			//myLogSource.LogInfo(PoseVectorDotForwardRight);
-			//myLogSource.LogInfo(PoseVectorDotForwardForward);
-			/*
-			myLogSource.LogInfo("PoseVectorDot Up      Up, right, forward: ");
-			myLogSource.LogInfo(PoseVectorDotUpUp);
-			myLogSource.LogInfo(PoseVectorDotUpRight);
-			myLogSource.LogInfo(PoseVectorDotUpForward);
-			*/
-			//myLogSource.LogInfo("Left Controller world pos: ");
-			//myLogSource.LogInfo(ControllerMhamoto.transform.position);
 
-			
 
 			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward < 0))
             {
@@ -940,6 +944,7 @@ namespace SetParentKK
 				{
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
 					SetP(true);
+					//sonyu.SetPlay("khs_f_n22");
 					LockedPose = PoseType.Carrying;
 					myLogSource.LogInfo("Entered Carrying");
 					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
@@ -955,6 +960,7 @@ namespace SetParentKK
 				{
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
 					SetP(true);
+					//sonyu.SetPlay("khs_f_02");
 					LockedPose = PoseType.Doggy;
 					myLogSource.LogInfo("Entered Doggy");
 					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
@@ -970,6 +976,7 @@ namespace SetParentKK
 				{
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_00"));        //Change girl to Missionary pose
 					SetP(true);
+					//sonyu.SetPlay("khs_f_00");
 					LockedPose = PoseType.Missionary;
 					myLogSource.LogInfo("Entered Missionary");
 					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
@@ -985,6 +992,7 @@ namespace SetParentKK
 				{
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n10"));        //Change girl to ReverseCowgirl pose
 					SetP(true);
+					//sonyu.SetPlay("khs_f_n10");
 					LockedPose = PoseType.ReverseCowgirl;
 					myLogSource.LogInfo("Entered ReverseCowgirl");
 					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
@@ -1144,15 +1152,21 @@ namespace SetParentKK
 
 		private bool MhamotoStarted = false;
 
+		Vector3 BellyButtonOffset;
+
 		internal GameObject ControllerInitState = new GameObject("ControllerInitState");
 
 		internal GameObject ControllerMhamoto = new GameObject();
+
+		internal GameObject InitController = new GameObject();
 
 		internal GameObject HipAbstraction = new GameObject("HipAbstraction");
 
 		internal GameObject HipAbstractionInitState = new GameObject("HipAbstractionInitState");
 
 		internal GameObject HMDAbstraction = new GameObject("HMDAbstraction");
+
+		internal HSonyu sonyu;
 
 		internal enum PoseType
 		{
