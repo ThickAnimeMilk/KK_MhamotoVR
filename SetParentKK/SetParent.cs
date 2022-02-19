@@ -6,6 +6,9 @@ using Illusion.Component.Correct;
 using UnityEngine;
 using HarmonyLib;
 using RootMotion.FinalIK;
+using H;
+using Manager;
+using ActionGame;
 using VRTK;
 using BepInEx;
 using BepInEx.Logging;
@@ -862,6 +865,8 @@ namespace SetParentKK
 
 		private void InitMhamotoSync ()
         {
+			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
+
 			//Controller that presses B
 			InitController = ParentSideController(true);
 			// Set left controller initial reference transform
@@ -873,23 +878,61 @@ namespace SetParentKK
 
 			// Parent and set initial pose
 			PushSetParentButton(true);                                                    // Parent girl to left controller
+
+			//hFlag.mode = HFlag.EMode.sonyu;
 			var scene = FindObjectOfType<VRHScene>();
 			sonyu = Traverse.Create(scene).Field("lstProc").GetValue<List<HActionBase>>().OfType<HSonyu>().FirstOrDefault();
-			hFlag.click = HFlag.ClickKind.modeChange;
-			hFlag.mode = HFlag.EMode.sonyu;
-			hFlag.nowAnimationInfo.nameAnimation = "khs_f_02";
-			hFlag.nowAnimStateName = "WLoop";
+
+			// This always returns NULL ;_;
+			//HPointData CurrentHPoint = Traverse.Create(scene).Field("selectData").GetValue<HPointData>();
+
+			// Find all the HPointDatas
+			ActionMap map = Singleton<Scene>.Instance.commonSpace.GetComponentInChildren<ActionMap>();
+			List<GameObject> objs = GlobalMethod.LoadAllFolder<GameObject>("h/common/", "HPoint_Add_" + map.no, null, null);
+			GameObject objPointFree = UnityEngine.Object.Instantiate<GameObject>(objs[objs.Count - 1]);
+			HPointData[] datas = objPointFree.GetComponentsInChildren<HPointData>(true);
+
+			//Find the first "laying" one
+
+			/*foreach (HPointData hpointData in datas)
+			{
+				if (hpointData.category.Any((int c) => (!isLesbian) ? (c == 1012) : (c == 1100)))
+				{
+					CurrentHPoint = hpointData;
+					break;
+				}
+			}
+			*/
+
+			CurrentHPoint = datas[0];
+			scene.ChangeCategory(CurrentHPoint, 2);  // Change the H mode to Sonyu
+			// This is a private method ;_;
+			//scene.ChangeAnimatorButton();
+
+			if (CurrentHPoint == null)
+				myLogSource.LogError("CurrentHPoint is NULL");
+			else
+				myLogSource.LogInfo("CurrentHPoint is valid!");
+
+
+			//hFlag.click = HFlag.ClickKind.modeChange;
+			//hFlag.nowAnimationInfo.nameAnimation = "khs_f_02";
+			//hFlag.nowAnimStateName = "WLoop";
 			//hFlag.click = HFlag.ClickKind.slow;
-			hFlag.click = HFlag.ClickKind.actionChange;
+			//hFlag.click = HFlag.ClickKind.actionChange;
 			//hSprite.SetSonyuStart();
 			//hSprite.OnInsertNoVoiceClick();
-			StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
+
+			//StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n22"));        //Change girl to Carrying/ekiben pose
+
 			LockedPose = PoseType.Carrying;
 			//PushSetParentButton(true);
 			SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
 
+			//sonyu.SetPlay("SLoop",true);
 
-			
+
+
 
 
 			// Set HMD and hip abstract reference transforms (for determining girl pose later)
@@ -901,6 +944,9 @@ namespace SetParentKK
 			HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(45, HMDAbstraction.transform.right) * Quaternion.AngleAxis(315, HMDAbstraction.transform.up);
 
 			HipAbstractionInitState.transform.rotation = HipAbstraction.transform.rotation;  // Store the initial value for processing later
+
+
+			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 
 			MhamotoStarted = true;
 		}
@@ -1166,7 +1212,9 @@ namespace SetParentKK
 
 		internal GameObject HMDAbstraction = new GameObject("HMDAbstraction");
 
-		internal HSonyu sonyu;
+		internal HActionBase sonyu;
+
+		internal HPointData CurrentHPoint;
 
 		internal enum PoseType
 		{
