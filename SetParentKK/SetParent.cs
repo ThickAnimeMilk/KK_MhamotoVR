@@ -924,8 +924,8 @@ namespace SetParentKK
 			HMDAbstraction.transform.position = cameraEye.transform.position;       // For debugging laser pointer
 
 			// Debugging line renders
-			//DrawLine(HipAbstraction.transform.position, HipAbstraction.transform.position + HipAbstraction.transform.forward * 100, Color.red);
-			//DrawLine(HMDAbstraction.transform.position, HMDAbstraction.transform.position + HMDAbstraction.transform.forward * 100, Color.white);
+			DrawLine(HipAbstraction.transform.position, HipAbstraction.transform.position + HipAbstraction.transform.forward * 100, Color.red);
+			DrawLine(HMDAbstraction.transform.position, HMDAbstraction.transform.position + HMDAbstraction.transform.forward * 100, Color.white);
 
 
 			// Get Dot products, for determining in which pose quadrant we are in.
@@ -957,7 +957,7 @@ namespace SetParentKK
 				}
 			}
 
-			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward > 0))
+			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward < 0))
 			{
 				if (LockedPose != PoseType.Doggy)
 				{
