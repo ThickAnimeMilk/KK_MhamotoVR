@@ -870,10 +870,15 @@ namespace SetParentKK
 			// Set left controller initial reference transform
 			ControllerMhamoto = controllers[Side.Left];
 			ControllerInitState.transform.rotation = ControllerMhamoto.transform.rotation;
+			HipAbstraction.transform.parent = ControllerMhamoto.transform;
+			
 
-			//Calculate the offset between parneted controller and bellybutton
+			//Calculate the offset between parented controller and bellybutton
 			BellyButtonOffset = InitController.transform.position - ControllerMhamoto.transform.position;
 			InitialBellyButtonOffset = BellyButtonOffset;
+
+			HipAbstraction.transform.position = InitController.transform.position;
+			HipAbstraction.transform.rotation = ControllerMhamoto.transform.rotation;
 
 			// Parent and set initial pose
 			PushSetParentButton(true);                                                    // Parent girl to left controller
@@ -899,9 +904,9 @@ namespace SetParentKK
 			// Hip is supposed to stand opposite of player on init.
 			HipAbstraction.transform.rotation = Quaternion.LookRotation(- HMDAbstraction.transform.forward, Vector3.up);    
 			// Now rotate it 45° around HMD right and up, so we can get a nice reference vector for determining the girl's pose.
-			HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(45, HMDAbstraction.transform.right) * Quaternion.AngleAxis(315, HMDAbstraction.transform.up);
+			//HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(45, HMDAbstraction.transform.right) * Quaternion.AngleAxis(315, HMDAbstraction.transform.up);
 
-			HipAbstractionInitState.transform.rotation = HipAbstraction.transform.rotation;  // Store the initial value for processing later
+			//HipAbstractionInitState.transform.rotation = HipAbstraction.transform.rotation;  // Store the initial value for processing later
 
 			MhamotoStarted = true;
 		}
@@ -912,10 +917,10 @@ namespace SetParentKK
 			//Quaternion rotationDelta = Quaternion.FromToRotation(ControllerInitState.transform.forward, ControllerMhamoto.transform.forward);
 			Quaternion rotationDelta =  ControllerMhamoto.transform.rotation * Quaternion.Inverse(ControllerInitState.transform.rotation);
 
-			HipAbstraction.transform.rotation = HipAbstractionInitState.transform.rotation * rotationDelta;
+			//HipAbstraction.transform.rotation = HipAbstractionInitState.transform.rotation * rotationDelta;
 
 			BellyButtonOffset = rotationDelta * InitialBellyButtonOffset;
-			HipAbstraction.transform.position = ControllerMhamoto.transform.position - BellyButtonOffset;		// For debugging laser pointer
+			//HipAbstraction.transform.position = ControllerMhamoto.transform.position - BellyButtonOffset;		// For debugging laser pointer
 
 			// Update HMD abstract reference transform
 			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
@@ -923,19 +928,23 @@ namespace SetParentKK
 
 			HMDAbstraction.transform.position = cameraEye.transform.position;       // For debugging laser pointer
 
+			Vector3 UpBackRight = Vector3.Normalize(new Vector3(-1, 1, 1));
+			Vector3 firstvec = HipAbstraction.transform.TransformDirection(UpBackRight);
+			Vector3 secondvec = HMDAbstraction.transform.InverseTransformDirection(firstvec);
+
 			// Debugging line renders
-			DrawLine(HipAbstraction.transform.position, HipAbstraction.transform.position + HipAbstraction.transform.forward * 100, Color.red);
-			DrawLine(HMDAbstraction.transform.position, HMDAbstraction.transform.position + HMDAbstraction.transform.forward * 100, Color.white);
+			//DrawLine(HipAbstraction.transform.position, HipAbstraction.transform.position + firstvec * 100, Color.red);
+			//DrawLine(HMDAbstraction.transform.position, HMDAbstraction.transform.position + HMDAbstraction.transform.forward * 100, Color.white);
 
 
 			// Get Dot products, for determining in which pose quadrant we are in.
-			float PoseVectorDotForwardUp = Vector3.Dot(HipAbstraction.transform.forward, HMDAbstraction.transform.up);
-			float PoseVectorDotForwardRight = Vector3.Dot(HipAbstraction.transform.forward, HMDAbstraction.transform.right);
-			float PoseVectorDotForwardForward = Vector3.Dot(HipAbstraction.transform.forward, HMDAbstraction.transform.forward);
+			float PoseVectorDotForwardUp = Vector3.Dot(firstvec, HMDAbstraction.transform.up);
+			float PoseVectorDotForwardRight = Vector3.Dot(firstvec, HMDAbstraction.transform.right);
+			float PoseVectorDotForwardForward = Vector3.Dot(firstvec, HMDAbstraction.transform.forward);
 
-			float PoseVectorDotUpUp = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.up);
-			float PoseVectorDotUpRight = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.right);
-			float PoseVectorDotUpForward = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.forward);
+			//float PoseVectorDotUpUp = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.up);
+			//float PoseVectorDotUpRight = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.right);
+			//float PoseVectorDotUpForward = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.forward);
 
 			// Logging for debugging
 			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
@@ -957,7 +966,7 @@ namespace SetParentKK
 				}
 			}
 
-			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward < 0))
+			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
 			{
 				if (LockedPose != PoseType.Doggy)
 				{
@@ -973,7 +982,7 @@ namespace SetParentKK
 				}
 			}
 
-			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
+			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward > 0))
 			{
 				if (LockedPose != PoseType.Missionary)
 				{
@@ -989,7 +998,7 @@ namespace SetParentKK
 				}
 			}
 
-			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
+			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
 			{
 				if (LockedPose != PoseType.ReverseCowgirl)
 				{
