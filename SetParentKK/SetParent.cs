@@ -711,8 +711,9 @@ namespace SetParentKK
 			parentDummy.transform.position = controller.transform.position + BellyButtonOffset;
 			//parentDummy.transform.position = target.transform.position;
 			//parentDummy.transform.rotation = target.transform.rotation;
-			// MhamotoVR: Try and stop the rotation from drifting
-			parentDummy.transform.rotation = controller.transform.rotation * Quaternion.Inverse(ControllerInitState.transform.rotation);
+			// MhamotoVR: Match up the girl's rotation with the hip
+			parentDummy.transform.rotation = Quaternion.LookRotation(HipAbstraction.transform.forward, HipAbstraction.transform.up);
+
 		}
 
 		/// <summary>
@@ -872,13 +873,17 @@ namespace SetParentKK
 			ControllerInitState.transform.rotation = ControllerMhamoto.transform.rotation;
 			HipAbstraction.transform.parent = ControllerMhamoto.transform;
 			
-
 			//Calculate the offset between parented controller and bellybutton
 			BellyButtonOffset = InitController.transform.position - ControllerMhamoto.transform.position;
 			InitialBellyButtonOffset = BellyButtonOffset;
 
 			HipAbstraction.transform.position = InitController.transform.position;
 			HipAbstraction.transform.rotation = ControllerMhamoto.transform.rotation;
+
+			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
+			HMDAbstraction.transform.rotation = Quaternion.LookRotation(CameraForwardNoUp, Vector3.up);
+			// Hip is supposed to stand opposite of player on init.
+			HipAbstraction.transform.rotation = Quaternion.LookRotation(-HMDAbstraction.transform.forward, Vector3.up);
 
 			// Parent and set initial pose
 			PushSetParentButton(true);                                                    // Parent girl to left controller
@@ -897,27 +902,14 @@ namespace SetParentKK
 			//PushSetParentButton(true);
 			SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
 
-
-			// Set HMD and hip abstract reference transforms (for determining girl pose later)
-			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
-			HMDAbstraction.transform.rotation = Quaternion.LookRotation(CameraForwardNoUp,Vector3.up);
-			// Hip is supposed to stand opposite of player on init.
-			HipAbstraction.transform.rotation = Quaternion.LookRotation(- HMDAbstraction.transform.forward, Vector3.up);    
-			// Now rotate it 45° around HMD right and up, so we can get a nice reference vector for determining the girl's pose.
-			//HipAbstraction.transform.rotation = HipAbstraction.transform.rotation * Quaternion.AngleAxis(45, HMDAbstraction.transform.right) * Quaternion.AngleAxis(315, HMDAbstraction.transform.up);
-
-			//HipAbstractionInitState.transform.rotation = HipAbstraction.transform.rotation;  // Store the initial value for processing later
-
+			  
 			MhamotoStarted = true;
 		}
 
 		private void MhamotoSync ()
         {
 			//Get controller relative rotation compared to start transform
-			//Quaternion rotationDelta = Quaternion.FromToRotation(ControllerInitState.transform.forward, ControllerMhamoto.transform.forward);
 			Quaternion rotationDelta =  ControllerMhamoto.transform.rotation * Quaternion.Inverse(ControllerInitState.transform.rotation);
-
-			//HipAbstraction.transform.rotation = HipAbstractionInitState.transform.rotation * rotationDelta;
 
 			BellyButtonOffset = rotationDelta * InitialBellyButtonOffset;
 			//HipAbstraction.transform.position = ControllerMhamoto.transform.position - BellyButtonOffset;		// For debugging laser pointer
