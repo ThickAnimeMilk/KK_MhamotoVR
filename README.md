@@ -4,6 +4,8 @@
 To install, just unzip the .dll from releases into your koikatsu install's BepInEx folder. Make sure you don't have KK_SetParentVR enabled, as this mod is a filthy hack of that one and uses the same input etc.
 To use the mod, once you're loaded in VR free-H: face the girl (like in the demo video, if using hip, make the hip face you as well). Put your right controller on your hip's bellybutton and hold the "B" button for a second.
 
+Recommended to use with a fapquesti or something similar you made out of cardboard. ( https://www.thingiverse.com/thing:4582472 )
+
 Current proof of concept demo video: https://files.catbox.moe/0531wv.mp4
 
 Link to KK_SetParentVR: https://github.com/MayouKurayami/KK_SetParentVR
