@@ -12,7 +12,7 @@ namespace SetParentKK
 			setParentObj = setParent;
 		}
 
-		private void Start()
+		public void Start()
 		{
 			animObject = setParentObj.female_p_cf_bodybone;
 			if (animObject == null)
@@ -52,6 +52,7 @@ namespace SetParentKK
 			}
 			if (nameAnimation != hFlag.nowAnimationInfo.nameAnimation)
 			{
+				//nameAnimation = hFlag.nowAnimationInfo.nameAnimation;
 				UnityEngine.Object.DestroyImmediate(this);
 				return;
 			}

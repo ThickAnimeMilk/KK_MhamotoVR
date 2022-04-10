@@ -6,9 +6,13 @@ using Illusion.Component.Correct;
 using UnityEngine;
 using HarmonyLib;
 using RootMotion.FinalIK;
+using H;
+using Manager;
+using ActionGame;
 using VRTK;
 using BepInEx;
 using BepInEx.Logging;
+using Valve.VR;
 using static SetParentKK.KK_SetParentVR;
 
 namespace SetParentKK
@@ -66,6 +70,7 @@ namespace SetParentKK
 			female_cf_j_spine01 = femaleFBBIK.references.spine[0].gameObject;
 			female_cf_j_spine02 = femaleFBBIK.references.spine[1].gameObject;
 			female_cf_j_neck = femaleFBBIK.references.spine[2].gameObject;
+			female_cf_j_head = femaleFBBIK.references.head.gameObject;
 			female_cf_j_spine03 = femaleFBBIK.references.spine[2].parent.gameObject;
 
 			switch (ParentPart.Value)
@@ -242,7 +247,49 @@ namespace SetParentKK
 						hideCanvas = true;
 						hideCount = 0f;
 
-						InitMhamotoSync();
+						if (MhamotoCounter == 0)
+                        {
+							OriginalHMDParent = cameraEye.transform.parent;
+							OriginalLeftControllerParent = controllers[Side.Left].transform.parent;
+							OriginalRightControllerParent = controllers[Side.Right].transform.parent;
+						}
+
+						MhamotoCounter++;
+						MhamotoState = MhamotoCounter % 4;
+
+						switch(MhamotoState)
+                        {
+							case 0:
+                                {
+									ResetState();
+									break;
+                                }
+							case 1:
+                                {
+									ResetState();
+									InitMhamotoSync();
+									break;
+                                }
+							case 2:
+                                {
+									ResetState();
+									InitFPOV();
+									//InitFPOV();		// Needs to be done twice to work correctly for some reason
+									break;
+								}
+							case 3:
+                                {
+									ResetState();
+									InitDakiMode();
+									break;
+                                }
+							default:
+                                {
+									ResetState();
+									break;
+                                }
+						}
+
 					}
 				}
 				else
@@ -254,6 +301,16 @@ namespace SetParentKK
                 {
 					MhamotoSync();
 				}
+
+                if (FPOVStarted)
+                {
+                    FPOV();
+                }
+
+				if (DakiModeStarted)
+                {
+					DakiMode();
+                }
 
 				//Make floating menu follow and rotate around female
 				Vector3 point = femaleAim.transform.position - cameraEye.transform.position;
@@ -364,6 +421,9 @@ namespace SetParentKK
 
 				//Update player's shoulder collider's rotation to always be facing the girl
 				shoulderCollider.transform.LookAt(femaleBase.transform, cameraEye.transform.up);
+				//var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
+				//myLogSource.LogInfo(hFlag.nowAnimationInfo.nameAnimation);
+				//BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 			}
 
 
@@ -693,10 +753,12 @@ namespace SetParentKK
 		{
 			GameObject controller = ParentSideController(notParentSide);
 
-			
 
 
-			parentDummy.transform.parent = controller.transform;
+			if (DakiModeStarted)
+				parentDummy.transform.parent = ViveTracker.transform;
+			else
+				parentDummy.transform.parent = controller.transform;
 
 			if (hideModel)
 			{
@@ -707,12 +769,21 @@ namespace SetParentKK
 					controller.transform.Find("ControllerCollider").GetComponent<SphereCollider>().enabled = false;
 				}		
 			}
-			// MhamotoVR: get rid of the offset between controller and girl.
-			parentDummy.transform.position = controller.transform.position + BellyButtonOffset;
-			//parentDummy.transform.position = target.transform.position;
-			//parentDummy.transform.rotation = target.transform.rotation;
-			// MhamotoVR: Match up the girl's rotation with the hip
-			parentDummy.transform.rotation = Quaternion.LookRotation(HipAbstraction.transform.forward, HipAbstraction.transform.up);
+
+			if (DakiModeStarted)
+			{
+				parentDummy.transform.position = ViveTracker.transform.position;
+				parentDummy.transform.rotation = ViveTracker.transform.rotation;
+			}
+			else
+			{
+				// MhamotoVR: get rid of the offset between controller and girl.
+				parentDummy.transform.position = controller.transform.position + BellyButtonOffset;
+				//parentDummy.transform.position = target.transform.position;
+				//parentDummy.transform.rotation = target.transform.rotation;
+				// MhamotoVR: Match up the girl's rotation with the hip
+				parentDummy.transform.rotation = Quaternion.LookRotation(HipAbstraction.transform.forward, HipAbstraction.transform.up);
+			}
 
 		}
 
@@ -865,7 +936,7 @@ namespace SetParentKK
 
 		private void InitMhamotoSync ()
         {
-			
+
 			//Controller that presses B
 			InitController = controllers[Side.Right];
 			// Set left controller initial reference transform
@@ -888,17 +959,79 @@ namespace SetParentKK
 			// Parent and set initial pose
 			PushSetParentButton(true);                                                    // Parent girl to left controller
 			var scene = FindObjectOfType<VRHScene>();
-			sonyu = Traverse.Create(scene).Field("lstProc").GetValue<List<HActionBase>>().OfType<HSonyu>().FirstOrDefault();
-			//hFlag.click = HFlag.ClickKind.modeChange;
-			//hFlag.mode = HFlag.EMode.sonyu;
-			//hFlag.nowAnimationInfo.nameAnimation = "khs_f_02";
-			//hFlag.nowAnimStateName = "WLoop";
+
+			// Find all the HPointDatas
+			ActionMap map = Singleton<Scene>.Instance.commonSpace.GetComponentInChildren<ActionMap>();
+			List<GameObject> objs = GlobalMethod.LoadAllFolder<GameObject>("h/common/", "HPoint_" + map.no, null, null);
+			GameObject objPointFree = UnityEngine.Object.Instantiate<GameObject>(objs[objs.Count - 1]);
+			HPointData[] datas = objPointFree.GetComponentsInChildren<HPointData>(true);
+
+			// Find the H-point closest to us.
+			CurrentHPoint = datas[0];
+			foreach (HPointData ahpointdata in datas)
+			{
+				float distance = Vector3.Distance(ahpointdata.transform.position, cameraEye.transform.position);
+				if (distance < ClosestHpointDistance)
+				{
+					ClosestHpointDistance = distance;
+					CurrentHPoint = ahpointdata;
+				}
+
+			}
+			ClosestHpointDistance = 9999999f;
+
+			// Changes to Sonyu
+			//scene.ChangeCategory(CurrentHPoint, 2);
+
+			//HSceneProc.AnimationListInfo animlistinfo = hFlag.selectAnimationListInfo;						// Breaks stuff
+			//animlistinfo.mode = HFlag.EMode.sonyu;															// Breaks stuff
+			//animlistinfo.nameAnimation = "khs_f_n10";	// Change the selected animation to reverse cowgirl
+
+			// Change the H mode to Sonyu
+			//hFlag.mode = HFlag.EMode.sonyu;				// Doesn't break anything
+			
+						// Doesn't break anything
 			//hFlag.click = HFlag.ClickKind.slow;
 			//hFlag.click = HFlag.ClickKind.actionChange;
-			//hSprite.SetSonyuStart();
-			//hSprite.OnInsertNoVoiceClick();
-			StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n04"));        //Change girl to Cowgirl(strength) pose
-			LockedPose = PoseType.Carrying;
+
+
+			//hSprite.SetSonyuStart();					// Doesn't break anything
+
+
+			//hFlag.nowAnimationInfo.nameAnimation = "khs_f_02";
+			//hFlag.nowAnimStateName = "WLoop";			// Breaks stuff
+			//sonyu.SetPlay("khs_f_n04");
+			//hFlag.nowAnimStateName = "InsertIdle";
+			//hFlag.click = HFlag.ClickKind.modeChange;	// Breaks stuff
+
+
+			//sonyu = Traverse.Create(scene).Field("lstProc").GetValue<List<HActionBase>>().OfType<HSonyu>().FirstOrDefault();		// Doesn't break anything
+			//sonyu.Proc();                   // Doesn't break anything
+
+
+			//hFlag.nowAnimationInfo.nameAnimation = "Doggystyle";
+			//sonyu.SetPlay("SLoop", true);
+			
+
+
+			/* //This code doesn't break anything
+            HSceneProc.AnimationListInfo MyAnimList = hFlag.nowAnimationInfo;
+            MyAnimList.mode = HFlag.EMode.sonyu;
+            MyAnimList.nameAnimation = "Doggystyle";
+            scene.flags.selectAnimationListInfo = MyAnimList;
+
+			hSprite.OnInsertNoVoiceClick();
+
+			hFlag.nowAnimStateName = "WLoop";
+			*/
+
+
+
+			//public bool SonyuProc()
+
+
+			StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n10"));        //Change girl to reverse cowgirl pose, somehow makes things work.
+			LockedPose = PoseType.ReverseCowgirl;
 			//PushSetParentButton(true);
 			SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
 
@@ -941,6 +1074,7 @@ namespace SetParentKK
 			// Logging for debugging
 			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
 
+			
 
 			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward < 0))
             {
@@ -948,7 +1082,7 @@ namespace SetParentKK
 				{
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n04"));        //Change girl to cowgirl(strength) pose
 					SetP(true);
-					//sonyu.SetPlay("khs_f_n22");
+					//sonyu.SetPlay("khs_f_n04");
 					LockedPose = PoseType.Carrying;
 					myLogSource.LogInfo("Entered Carrying");
 					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
@@ -960,6 +1094,7 @@ namespace SetParentKK
 
 			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
 			{
+				/*
 				if (LockedPose != PoseType.Doggy)
 				{
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
@@ -972,11 +1107,13 @@ namespace SetParentKK
 					myLogSource.LogInfo(PoseVectorDotForwardRight);
 					myLogSource.LogInfo(PoseVectorDotForwardForward);
 				}
+				*/
 			}
 
 			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward > 0))
 			{
-				if (LockedPose != PoseType.Missionary)
+				/*
+				 if (LockedPose != PoseType.Missionary)
 				{
 					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n00"));        //Change girl to Mating press pose
 					SetP(true);
@@ -988,13 +1125,14 @@ namespace SetParentKK
 					myLogSource.LogInfo(PoseVectorDotForwardRight);
 					myLogSource.LogInfo(PoseVectorDotForwardForward);
 				}
+				*/
 			}
 
 			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
 			{
 				if (LockedPose != PoseType.ReverseCowgirl)
 				{
-					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n10"));        //Change girl to ReverseCowgirl pose
+					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
 					SetP(true);
 					//sonyu.SetPlay("khs_f_n10");
 					LockedPose = PoseType.ReverseCowgirl;
@@ -1010,6 +1148,86 @@ namespace SetParentKK
 
 		}
 
+        void InitFPOV()
+        {
+			if (FPOVHeadDummy.transform.parent == null)
+			{
+				FPOVHeadDummy.transform.position = female_cf_j_head.transform.position;
+				FPOVHeadDummy.transform.rotation = female_cf_j_head.transform.rotation;
+
+				FPOVHeadDummy.transform.parent = female_cf_j_head.transform;
+			}
+
+			FPOVHeadDummy.transform.localPosition = new Vector3(0, 0, 0);
+			cameraEye.transform.parent = FPOVHeadDummy.transform;
+
+			//FPOVHeadDummy.transform.localPosition = -cameraEye.transform.localPosition;
+
+			controllers[Side.Right].transform.parent = female_cf_j_head.transform;
+			controllers[Side.Left].transform.parent = female_cf_j_head.transform;
+
+			FPOVStarted = true;
+        }
+
+        void FPOV()
+        {
+            return;
+        }
+
+		void InitDakiMode()
+        {
+			vrSystem = OpenVR.System;
+			ReadtrackerPos();
+
+			//OriginalFemaleParent = female_cf_j_hips.transform.parent;
+
+			//female_cf_j_hips.transform.parent = ViveTracker.transform;
+			//female_cf_j_hips.transform.position = ViveTracker.transform.position;
+			//female_cf_j_hips.transform.rotation = ViveTracker.transform.rotation;
+
+			DakiModeStarted = true;
+			SetP(false);
+
+			return;
+        }
+
+		void DakiMode()
+        {
+			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
+
+			ReadtrackerPos();
+
+			myLogSource.LogInfo("Camera world pos: ");
+			myLogSource.LogInfo(cameraEye.transform.position);
+			myLogSource.LogInfo("Right controller world pos: ");
+			myLogSource.LogInfo(controllers[Side.Right].transform.position);
+			myLogSource.LogInfo("Tracker world pos: ");
+			myLogSource.LogInfo(ViveTracker.transform.position);
+
+			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
+			return;
+        }
+
+		void ResetState()
+        {
+
+			cameraEye.transform.parent = OriginalHMDParent;
+			controllers[Side.Right].transform.parent = OriginalRightControllerParent;
+			controllers[Side.Left].transform.parent = OriginalLeftControllerParent;
+
+
+			if (MhamotoCounter > 0)
+				UnsetP();
+
+			//if (DakiModeStarted)
+				//female_cf_j_hips.transform.parent = OriginalFemaleParent;
+
+			MhamotoStarted = false;
+			FPOVStarted = false;
+			DakiModeStarted = false;
+
+			return;
+		}
 
 
 		void DrawLine(Vector3 start, Vector3 end, Color color, float duration = 0.01f)
@@ -1030,6 +1248,31 @@ namespace SetParentKK
 			lr.SetPosition(1, end);
 			GameObject.Destroy(myLine, duration);
 		}
+
+		private bool ReadtrackerPos()
+        {
+			vrSystem.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0, allPoses);
+
+			var pose = allPoses[3];
+			var poseHMD = allPoses[0];
+
+			if (pose.bPoseIsValid)
+			{
+				var absTracking = pose.mDeviceToAbsoluteTracking;
+				var mat = new SteamVR_Utils.RigidTransform(absTracking);
+
+				var absTrackingHMD = poseHMD.mDeviceToAbsoluteTracking;
+				var matHMD = new SteamVR_Utils.RigidTransform(absTrackingHMD);
+
+				ViveTracker.transform.position = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);
+				ViveTracker.transform.rotation = mat.rot;
+				ViveTracker.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
+
+				return true;
+			}
+			return false;
+		}
+
 
 
 
@@ -1172,6 +1415,33 @@ namespace SetParentKK
 		internal GameObject HMDAbstraction = new GameObject("HMDAbstraction");
 
 		internal HSonyu sonyu;
+
+		float ClosestHpointDistance = 9999999f;
+
+		internal HPointData CurrentHPoint;
+
+        bool FPOVStarted = false;
+
+		internal GameObject FPOVHeadDummy = new GameObject();
+
+		private GameObject female_cf_j_head;
+
+		int MhamotoCounter = 0;
+
+		int MhamotoState = 0;
+
+		bool DakiModeStarted = false;
+
+		Transform OriginalHMDParent = null;
+		Transform OriginalLeftControllerParent = null;
+		Transform OriginalRightControllerParent = null;
+		Transform OriginalFemaleParent = null;
+
+		CVRSystem vrSystem = OpenVR.System;
+		TrackedDevicePose_t[] allPoses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
+
+		internal GameObject ViveTracker = new GameObject("ViveTracker");
+
 
 		internal enum PoseType
 		{
