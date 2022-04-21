@@ -12,6 +12,8 @@ using ActionGame;
 using VRTK;
 using BepInEx;
 using BepInEx.Logging;
+using UnityEngine.Networking;
+using System.Collections;
 using Valve.VR;
 using static SetParentKK.KK_SetParentVR;
 
@@ -267,7 +269,8 @@ namespace SetParentKK
 							case 1:
                                 {
 									ResetState();
-									InitMhamotoSync();
+									InitMhamotoSpeak();
+									//InitMhamotoSync();
 									break;
                                 }
 							case 2:
@@ -310,6 +313,11 @@ namespace SetParentKK
 				if (DakiModeStarted)
                 {
 					DakiMode();
+                }
+
+				if (MhamotoSpeakStarted)
+                {
+					MhamotoSpeak();
                 }
 
 				//Make floating menu follow and rotate around female
@@ -1177,6 +1185,14 @@ namespace SetParentKK
 		void InitDakiMode()
         {
 			vrSystem = OpenVR.System;
+
+			Transform Mytransform = base.transform;
+			var scene = FindObjectOfType<VRHScene>();
+			//Mytransform.parent = scene.managerVR.scrCamera.origin;
+			//Mytransform.parent = scene.managerVR.objBase.transform;
+			Mytransform.parent = cameraEye.transform.parent;			// This one moves with you when you move the scene by hand + trigger
+
+			ViveTracker.transform.parent = Mytransform;
 			ReadtrackerPos();
 
 			//OriginalFemaleParent = female_cf_j_hips.transform.parent;
@@ -1197,6 +1213,8 @@ namespace SetParentKK
 
 			ReadtrackerPos();
 
+			myLogSource.LogInfo("CameraEye parent world pos: ");
+			myLogSource.LogInfo(cameraEye.transform.parent.position);
 			myLogSource.LogInfo("Camera world pos: ");
 			myLogSource.LogInfo(cameraEye.transform.position);
 			myLogSource.LogInfo("Right controller world pos: ");
@@ -1207,6 +1225,64 @@ namespace SetParentKK
 			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 			return;
         }
+
+		private bool ReadtrackerPos()
+		{
+			vrSystem.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0, allPoses);
+
+			var pose = allPoses[3];
+			var poseHMD = allPoses[0];
+
+			if (pose.bPoseIsValid)
+			{
+				var absTracking = pose.mDeviceToAbsoluteTracking;
+				var mat = new SteamVR_Utils.RigidTransform(absTracking);
+
+				var absTrackingHMD = poseHMD.mDeviceToAbsoluteTracking;
+				var matHMD = new SteamVR_Utils.RigidTransform(absTrackingHMD);
+
+				Vector3 ParentForward;
+				Vector3 ParentRight;
+				Vector3 ParentUp;
+
+				Vector3 HMDForward;
+				Vector3 HMDRight;
+				Vector3 HMDUp;
+
+				Vector3 TrackerForward;
+				Vector3 TrackerRight;
+				Vector3 TrackerUp;
+
+				ParentForward = cameraEye.transform.parent.InverseTransformDirection(Vector3.forward);
+				ParentRight = cameraEye.transform.parent.InverseTransformDirection(Vector3.right);
+				ParentUp = cameraEye.transform.parent.InverseTransformDirection(Vector3.up);
+
+				HMDForward = matHMD.rot * Vector3.forward;
+				HMDRight = matHMD.rot * Vector3.right;
+				HMDUp = matHMD.rot * Vector3.up;
+
+				TrackerForward = mat.rot * Vector3.forward;
+				TrackerRight = mat.rot * Vector3.right;
+				TrackerUp = mat.rot * Vector3.up;
+
+				float TrackerPosForward = Vector3.Dot(mat.pos, HMDForward);
+				float TrackerPosRight = Vector3.Dot(mat.pos, HMDRight);
+				float TrackerPosUp = Vector3.Dot(mat.pos, HMDUp);
+
+				ViveTracker.transform.localPosition = TrackerPosForward * ParentForward + TrackerPosRight * ParentRight + TrackerPosUp * ParentUp;		  // This onei s same as mat.pos
+				//ViveTracker.transform.localPosition = TrackerPosForward * Vector3.forward + TrackerPosRight * Vector3.right + TrackerPosUp * Vector3.up;    // this one sucks
+				//ViveTracker.transform.localPosition = TrackerPosForward * HMDForward + TrackerPosRight * HMDRight + TrackerPosUp * HMDUp;
+
+				//ViveTracker.transform.position = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);
+				//ViveTracker.transform.rotation = mat.rot;
+				//ViveTracker.transform.localPosition = mat.pos;
+				ViveTracker.transform.localRotation = mat.rot;
+				ViveTracker.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+
+				return true;
+			}
+			return false;
+		}
 
 		void ResetState()
         {
@@ -1249,32 +1325,34 @@ namespace SetParentKK
 			GameObject.Destroy(myLine, duration);
 		}
 
-		private bool ReadtrackerPos()
+		void InitMhamotoSpeak()
         {
-			vrSystem.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0, allPoses);
+			audioSource = gameObject.AddComponent<AudioSource>();
+			audioSource.clip = LoadAudioClip("F:/SteamLibrary/steamapps/common/SkyrimVR/Data/Sound/fx/ConvAiFollower/output.wav", AudioType.WAV);
 
-			var pose = allPoses[3];
-			var poseHMD = allPoses[0];
+			audioSource.Play(0);
 
-			if (pose.bPoseIsValid)
+			MhamotoSpeakStarted = true;
+        }
+
+		void MhamotoSpeak()
+        {
+
+        }
+
+		public static AudioClip LoadAudioClip(string path, AudioType type)
+		{
+			AudioClip result;
+			using (WWW www = new WWW(BepInEx4.Utility.ConvertToWWWFormat(path)))
 			{
-				var absTracking = pose.mDeviceToAbsoluteTracking;
-				var mat = new SteamVR_Utils.RigidTransform(absTracking);
-
-				var absTrackingHMD = poseHMD.mDeviceToAbsoluteTracking;
-				var matHMD = new SteamVR_Utils.RigidTransform(absTrackingHMD);
-
-				ViveTracker.transform.position = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);
-				ViveTracker.transform.rotation = mat.rot;
-				ViveTracker.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
-
-				return true;
+				AudioClip audioClipCompressed = www.GetAudioClipCompressed(false, type);
+				while (audioClipCompressed.loadState != AudioDataLoadState.Loaded)
+				{
+				}
+				result = audioClipCompressed;
 			}
-			return false;
+			return result;
 		}
-
-
-
 
 		/// <summary>
 		/// Returns the controller that's acting as parent.
@@ -1441,6 +1519,11 @@ namespace SetParentKK
 		TrackedDevicePose_t[] allPoses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
 
 		internal GameObject ViveTracker = new GameObject("ViveTracker");
+
+		bool MhamotoSpeakStarted = false;
+
+		AudioClip AIConvLine;
+		AudioSource audioSource;
 
 
 		internal enum PoseType
