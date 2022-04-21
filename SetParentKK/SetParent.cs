@@ -15,6 +15,7 @@ using BepInEx.Logging;
 using UnityEngine.Networking;
 using System.Collections;
 using Valve.VR;
+using System.IO;
 using static SetParentKK.KK_SetParentVR;
 
 namespace SetParentKK
@@ -1327,10 +1328,7 @@ namespace SetParentKK
 
 		void InitMhamotoSpeak()
         {
-			audioSource = gameObject.AddComponent<AudioSource>();
-			audioSource.clip = LoadAudioClip("F:/SteamLibrary/steamapps/common/SkyrimVR/Data/Sound/fx/ConvAiFollower/output.wav", AudioType.WAV);
-
-			audioSource.Play(0);
+			CreateFileWatcher(@"F:\SteamLibrary\steamapps\common\SkyrimVR\Data\Sound\fx\ConvAiFollower");
 
 			MhamotoSpeakStarted = true;
         }
@@ -1352,6 +1350,36 @@ namespace SetParentKK
 				result = audioClipCompressed;
 			}
 			return result;
+		}
+
+		public void CreateFileWatcher(string path)
+		{
+			// Create a new FileSystemWatcher and set its properties.
+			FileSystemWatcher watcher = new FileSystemWatcher();
+			watcher.Path = path;
+			/* Watch for changes in LastAccess and LastWrite times, and 
+			   the renaming of files or directories. */
+			watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
+			   | NotifyFilters.FileName | NotifyFilters.DirectoryName;
+			// Only watch text files.
+			watcher.Filter = "*.wav";
+
+			// Add event handlers.
+			watcher.Changed += new FileSystemEventHandler(OnChanged);
+			watcher.Created += new FileSystemEventHandler(OnChanged);
+			watcher.Deleted += new FileSystemEventHandler(OnChanged);
+
+			// Begin watching.
+			watcher.EnableRaisingEvents = true;
+		}
+
+		// Define the event handlers.
+		void OnChanged(object source, FileSystemEventArgs e)
+		{
+			audioSource = gameObject.AddComponent<AudioSource>();
+			audioSource.clip = LoadAudioClip("F:/SteamLibrary/steamapps/common/SkyrimVR/Data/Sound/fx/ConvAiFollower/output.wav", AudioType.WAV);
+
+			audioSource.Play(0);
 		}
 
 		/// <summary>
@@ -1522,7 +1550,6 @@ namespace SetParentKK
 
 		bool MhamotoSpeakStarted = false;
 
-		AudioClip AIConvLine;
 		AudioSource audioSource;
 
 
