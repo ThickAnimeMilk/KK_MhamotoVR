@@ -1187,14 +1187,24 @@ namespace SetParentKK
         {
 			vrSystem = OpenVR.System;
 
+			// FoundTrackedObjs = FindObjectsOfType<SteamVR_TrackedObject>();  // Doesn't detect the vive trackers
+
 			Transform Mytransform = base.transform;
 			var scene = FindObjectOfType<VRHScene>();
 			//Mytransform.parent = scene.managerVR.scrCamera.origin;
-			//Mytransform.parent = scene.managerVR.objBase.transform;
+			//Mytransform.parent = scene.managerVR.objBase.transform;		// This one doesn't make you move with hand + trigger
+			//Mytransform.parent = scene.managerVR.objMove.transform;		// This one also moves with you when you move the scene by hand + trigger
 			Mytransform.parent = cameraEye.transform.parent;			// This one moves with you when you move the scene by hand + trigger
 
 			ViveTracker.transform.parent = Mytransform;
 			ReadtrackerPos();
+
+			DakiCameraDummy.transform.parent = cameraEye.transform.parent;
+			cameraEye.transform.parent = DakiCameraDummy.transform;
+			DakiCameraDummy.transform.position = new Vector3(0, cameraEye.transform.position.y, 0);
+
+			controllers[Side.Right].transform.parent = DakiCameraDummy.transform;
+			controllers[Side.Left].transform.parent = DakiCameraDummy.transform;
 
 			//OriginalFemaleParent = female_cf_j_hips.transform.parent;
 
@@ -1214,6 +1224,16 @@ namespace SetParentKK
 
 			ReadtrackerPos();
 
+			/*
+			foreach (SteamVR_TrackedObject Myobj in FoundTrackedObjs)
+			{
+				myLogSource.LogInfo("TrackedObj index and pos: ");
+				myLogSource.LogInfo(Myobj.index);
+				myLogSource.LogInfo(Myobj.transform.position);
+			}
+			*/
+
+			
 			myLogSource.LogInfo("CameraEye parent world pos: ");
 			myLogSource.LogInfo(cameraEye.transform.parent.position);
 			myLogSource.LogInfo("Camera world pos: ");
@@ -1222,6 +1242,7 @@ namespace SetParentKK
 			myLogSource.LogInfo(controllers[Side.Right].transform.position);
 			myLogSource.LogInfo("Tracker world pos: ");
 			myLogSource.LogInfo(ViveTracker.transform.position);
+			
 
 			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 			return;
@@ -1233,6 +1254,7 @@ namespace SetParentKK
 
 			var pose = allPoses[3];
 			var poseHMD = allPoses[0];
+			var poseController = allPoses[2];
 
 			if (pose.bPoseIsValid)
 			{
@@ -1241,6 +1263,9 @@ namespace SetParentKK
 
 				var absTrackingHMD = poseHMD.mDeviceToAbsoluteTracking;
 				var matHMD = new SteamVR_Utils.RigidTransform(absTrackingHMD);
+
+				var absTrackingController = poseController.mDeviceToAbsoluteTracking;
+				var matController = new SteamVR_Utils.RigidTransform(absTrackingController);
 
 				Vector3 ParentForward;
 				Vector3 ParentRight;
@@ -1266,18 +1291,27 @@ namespace SetParentKK
 				TrackerRight = mat.rot * Vector3.right;
 				TrackerUp = mat.rot * Vector3.up;
 
-				float TrackerPosForward = Vector3.Dot(mat.pos, HMDForward);
-				float TrackerPosRight = Vector3.Dot(mat.pos, HMDRight);
-				float TrackerPosUp = Vector3.Dot(mat.pos, HMDUp);
+				float TrackerPosForward = Vector3.Dot(mat.pos, TrackerForward);
+				float TrackerPosRight = Vector3.Dot(mat.pos, TrackerRight);
+				float TrackerPosUp = Vector3.Dot(mat.pos, TrackerUp);
 
-				ViveTracker.transform.localPosition = TrackerPosForward * ParentForward + TrackerPosRight * ParentRight + TrackerPosUp * ParentUp;		  // This onei s same as mat.pos
+				//ViveTracker.transform.localPosition = TrackerPosForward * ParentForward + TrackerPosRight * ParentRight + TrackerPosUp * ParentUp;		  // This one is same as mat.pos
+				//ViveTracker.transform.position = TrackerPosForward * ParentForward + TrackerPosRight * ParentRight + TrackerPosUp * ParentUp;
 				//ViveTracker.transform.localPosition = TrackerPosForward * Vector3.forward + TrackerPosRight * Vector3.right + TrackerPosUp * Vector3.up;    // this one sucks
 				//ViveTracker.transform.localPosition = TrackerPosForward * HMDForward + TrackerPosRight * HMDRight + TrackerPosUp * HMDUp;
 
-				//ViveTracker.transform.position = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);
-				//ViveTracker.transform.rotation = mat.rot;
+
+				//ViveTracker.transform.localPosition = mat.pos - matHMD.pos;		// Does not work well at all, rotates around the table, wich is probably 0,0,0
+				//ViveTracker.transform.position = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);			// Somewhat works, but is bound to HMD transform
+				//ViveTracker.transform.localPosition = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);			// Pretty much same results as below
+				//ViveTracker.transform.rotation = mat.rot;                                                               // Almost perfect, just need to invert 2 axes
+				Vector3 v = mat.rot.eulerAngles;
+				ViveTracker.transform.rotation = Quaternion.Euler(v.z, v.y, v.x);
 				//ViveTracker.transform.localPosition = mat.pos;
-				ViveTracker.transform.localRotation = mat.rot;
+				ViveTracker.transform.localPosition = new Vector3(-mat.pos.z, mat.pos.y, mat.pos.x);
+
+				//ViveTracker.transform.localRotation = mat.rot;
+				//ViveTracker.transform.localRotation = mat.rot;
 				ViveTracker.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
 
 				return true;
@@ -1547,6 +1581,9 @@ namespace SetParentKK
 		TrackedDevicePose_t[] allPoses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
 
 		internal GameObject ViveTracker = new GameObject("ViveTracker");
+		SteamVR_TrackedObject[] FoundTrackedObjs;
+
+		internal GameObject DakiCameraDummy = new GameObject();
 
 		bool MhamotoSpeakStarted = false;
 
