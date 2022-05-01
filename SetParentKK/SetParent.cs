@@ -1234,15 +1234,13 @@ namespace SetParentKK
 			*/
 
 			
-			myLogSource.LogInfo("CameraEye parent world pos: ");
-			myLogSource.LogInfo(cameraEye.transform.parent.position);
-			myLogSource.LogInfo("Camera world pos: ");
-			myLogSource.LogInfo(cameraEye.transform.position);
-			myLogSource.LogInfo("Right controller world pos: ");
-			myLogSource.LogInfo(controllers[Side.Right].transform.position);
+			myLogSource.LogInfo("Left controller world pos: ");
+			myLogSource.LogInfo(controllers[Side.Left].transform.position);
 			myLogSource.LogInfo("Tracker world pos: ");
 			myLogSource.LogInfo(ViveTracker.transform.position);
-			
+			myLogSource.LogInfo("Tracker SteamVR pos: ");
+			myLogSource.LogInfo(RawTrackerInfo.transform.position);
+
 
 			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 			return;
@@ -1304,15 +1302,23 @@ namespace SetParentKK
 				//ViveTracker.transform.localPosition = mat.pos - matHMD.pos;		// Does not work well at all, rotates around the table, wich is probably 0,0,0
 				//ViveTracker.transform.position = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);			// Somewhat works, but is bound to HMD transform
 				//ViveTracker.transform.localPosition = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);			// Pretty much same results as below
-				//ViveTracker.transform.rotation = mat.rot;                                                               // Almost perfect, just need to invert 2 axes
+				//ViveTracker.transform.rotation = mat.rot;                
+				// Almost perfect, just need to invert 2 axes
 				Vector3 v = mat.rot.eulerAngles;
-				ViveTracker.transform.rotation = Quaternion.Euler(v.z, v.y, v.x);
+				ViveTracker.transform.localRotation = Quaternion.Euler(v.x, v.y, v.z);							// rotation is perfect, though it's like steering her, definitely local.
 				//ViveTracker.transform.localPosition = mat.pos;
-				ViveTracker.transform.localPosition = new Vector3(-mat.pos.z, mat.pos.y, mat.pos.x);
+				
+				//ViveTracker.transform.localPosition = new Vector3(-mat.pos.z, mat.pos.y, mat.pos.x);			// Used to give good results, i think?
+				ViveTracker.transform.localPosition = new Vector3(- mat.pos.x, mat.pos.y, - mat.pos.z);			// gives great results atm
 
 				//ViveTracker.transform.localRotation = mat.rot;
 				//ViveTracker.transform.localRotation = mat.rot;
+
 				ViveTracker.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+
+				RawTrackerInfo.transform.position = mat.pos;
+				RawTrackerInfo.transform.rotation = mat.rot;
+				RawTrackerInfo.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
 
 				return true;
 			}
@@ -1584,6 +1590,7 @@ namespace SetParentKK
 		SteamVR_TrackedObject[] FoundTrackedObjs;
 
 		internal GameObject DakiCameraDummy = new GameObject();
+		internal GameObject RawTrackerInfo = new GameObject("RawTrackerInfo");
 
 		bool MhamotoSpeakStarted = false;
 
