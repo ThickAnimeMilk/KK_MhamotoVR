@@ -1185,144 +1185,62 @@ namespace SetParentKK
 
 		void InitDakiMode()
         {
-			vrSystem = OpenVR.System;
+			TrackersManager = FindObjectOfType<SteamVR_ControllerManager>();
 
-			// FoundTrackedObjs = FindObjectsOfType<SteamVR_TrackedObject>();  // Doesn't detect the vive trackers
+			TrackerCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
 
-			Transform Mytransform = base.transform;
-			var scene = FindObjectOfType<VRHScene>();
-			//Mytransform.parent = scene.managerVR.scrCamera.origin;
-			//Mytransform.parent = scene.managerVR.objBase.transform;		// This one doesn't make you move with hand + trigger
-			//Mytransform.parent = scene.managerVR.objMove.transform;		// This one also moves with you when you move the scene by hand + trigger
-			Mytransform.parent = cameraEye.transform.parent;			// This one moves with you when you move the scene by hand + trigger
+			// Setting up the tracker
+			MyTracker.transform.parent = cameraEye.transform.parent;
+			SteamVR_TrackedObject MyTrackedObject = MyTracker.AddComponent<SteamVR_TrackedObject>() as SteamVR_TrackedObject;
+			int TrackerIndex = (int)FindTrackerIndex();
+			MyTrackedObject.SetDeviceIndex(TrackerIndex);
+			TrackersManager.objects.SetValue(MyTracker, TrackerIndex);
 
-			ViveTracker.transform.parent = Mytransform;
-			ReadtrackerPos();
 
-			DakiCameraDummy.transform.parent = cameraEye.transform.parent;
-			cameraEye.transform.parent = DakiCameraDummy.transform;
-			DakiCameraDummy.transform.position = new Vector3(0, cameraEye.transform.position.y, 0);
-
-			controllers[Side.Right].transform.parent = DakiCameraDummy.transform;
-			controllers[Side.Left].transform.parent = DakiCameraDummy.transform;
-
-			//OriginalFemaleParent = female_cf_j_hips.transform.parent;
-
-			//female_cf_j_hips.transform.parent = ViveTracker.transform;
-			//female_cf_j_hips.transform.position = ViveTracker.transform.position;
-			//female_cf_j_hips.transform.rotation = ViveTracker.transform.rotation;
+			//Attach Cube to tracker
+			TrackerCube.transform.position = MyTracker.transform.position;
+			//TrackerSphere.transform.parent = MyTracker.transform;
+			TrackerCube.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
 
 			DakiModeStarted = true;
-			SetP(false);
 
 			return;
         }
 
 		void DakiMode()
         {
+			//Update Tracker
+			TrackerCube.transform.position = MyTracker.transform.position;
+			TrackerCube.transform.rotation = MyTracker.transform.rotation;
+			TrackerCube.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+
 			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
-
-			ReadtrackerPos();
-
-			/*
-			foreach (SteamVR_TrackedObject Myobj in FoundTrackedObjs)
-			{
-				myLogSource.LogInfo("TrackedObj index and pos: ");
-				myLogSource.LogInfo(Myobj.index);
-				myLogSource.LogInfo(Myobj.transform.position);
-			}
-			*/
-
 			
 			myLogSource.LogInfo("Left controller world pos: ");
 			myLogSource.LogInfo(controllers[Side.Left].transform.position);
 			myLogSource.LogInfo("Tracker world pos: ");
-			myLogSource.LogInfo(ViveTracker.transform.position);
-			myLogSource.LogInfo("Tracker SteamVR pos: ");
-			myLogSource.LogInfo(RawTrackerInfo.transform.position);
+			myLogSource.LogInfo(TrackerCube.transform.position);
 
 
 			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 			return;
         }
 
-		private bool ReadtrackerPos()
+		uint FindTrackerIndex()
 		{
-			vrSystem.GetDeviceToAbsoluteTrackingPose(ETrackingUniverseOrigin.TrackingUniverseStanding, 0, allPoses);
-
-			var pose = allPoses[3];
-			var poseHMD = allPoses[0];
-			var poseController = allPoses[2];
-
-			if (pose.bPoseIsValid)
+			uint index = 0;
+			var error = ETrackedPropertyError.TrackedProp_Success;
+			for (uint i = 0; i < 16; i++)
 			{
-				var absTracking = pose.mDeviceToAbsoluteTracking;
-				var mat = new SteamVR_Utils.RigidTransform(absTracking);
-
-				var absTrackingHMD = poseHMD.mDeviceToAbsoluteTracking;
-				var matHMD = new SteamVR_Utils.RigidTransform(absTrackingHMD);
-
-				var absTrackingController = poseController.mDeviceToAbsoluteTracking;
-				var matController = new SteamVR_Utils.RigidTransform(absTrackingController);
-
-				Vector3 ParentForward;
-				Vector3 ParentRight;
-				Vector3 ParentUp;
-
-				Vector3 HMDForward;
-				Vector3 HMDRight;
-				Vector3 HMDUp;
-
-				Vector3 TrackerForward;
-				Vector3 TrackerRight;
-				Vector3 TrackerUp;
-
-				ParentForward = cameraEye.transform.parent.InverseTransformDirection(Vector3.forward);
-				ParentRight = cameraEye.transform.parent.InverseTransformDirection(Vector3.right);
-				ParentUp = cameraEye.transform.parent.InverseTransformDirection(Vector3.up);
-
-				HMDForward = matHMD.rot * Vector3.forward;
-				HMDRight = matHMD.rot * Vector3.right;
-				HMDUp = matHMD.rot * Vector3.up;
-
-				TrackerForward = mat.rot * Vector3.forward;
-				TrackerRight = mat.rot * Vector3.right;
-				TrackerUp = mat.rot * Vector3.up;
-
-				float TrackerPosForward = Vector3.Dot(mat.pos, TrackerForward);
-				float TrackerPosRight = Vector3.Dot(mat.pos, TrackerRight);
-				float TrackerPosUp = Vector3.Dot(mat.pos, TrackerUp);
-
-				//ViveTracker.transform.localPosition = TrackerPosForward * ParentForward + TrackerPosRight * ParentRight + TrackerPosUp * ParentUp;		  // This one is same as mat.pos
-				//ViveTracker.transform.position = TrackerPosForward * ParentForward + TrackerPosRight * ParentRight + TrackerPosUp * ParentUp;
-				//ViveTracker.transform.localPosition = TrackerPosForward * Vector3.forward + TrackerPosRight * Vector3.right + TrackerPosUp * Vector3.up;    // this one sucks
-				//ViveTracker.transform.localPosition = TrackerPosForward * HMDForward + TrackerPosRight * HMDRight + TrackerPosUp * HMDUp;
-
-
-				//ViveTracker.transform.localPosition = mat.pos - matHMD.pos;		// Does not work well at all, rotates around the table, wich is probably 0,0,0
-				//ViveTracker.transform.position = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);			// Somewhat works, but is bound to HMD transform
-				//ViveTracker.transform.localPosition = cameraEye.transform.TransformPoint(mat.pos - matHMD.pos);			// Pretty much same results as below
-				//ViveTracker.transform.rotation = mat.rot;                
-				// Almost perfect, just need to invert 2 axes
-				Vector3 v = mat.rot.eulerAngles;
-				ViveTracker.transform.localRotation = Quaternion.Euler(v.x, v.y, v.z);							// rotation is perfect, though it's like steering her, definitely local.
-				//ViveTracker.transform.localPosition = mat.pos;
-				
-				//ViveTracker.transform.localPosition = new Vector3(-mat.pos.z, mat.pos.y, mat.pos.x);			// Used to give good results, i think?
-				ViveTracker.transform.localPosition = new Vector3(- mat.pos.x, mat.pos.y, - mat.pos.z);			// gives great results atm
-
-				//ViveTracker.transform.localRotation = mat.rot;
-				//ViveTracker.transform.localRotation = mat.rot;
-
-				ViveTracker.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-
-				RawTrackerInfo.transform.position = mat.pos;
-				RawTrackerInfo.transform.rotation = mat.rot;
-				RawTrackerInfo.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-
-				return true;
+				var result = new System.Text.StringBuilder((int)64);
+				OpenVR.System.GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_RenderModelName_String, result, 64, ref error);
+				if (result.ToString().Contains("tracker"))
+				{
+					index = i;
+					return index;
+				}
 			}
-			return false;
+			return 0;
 		}
 
 		void ResetState()
@@ -1607,6 +1525,10 @@ namespace SetParentKK
 			Spooning
 		}
 		PoseType LockedPose;
+
+		internal GameObject MyTracker = new GameObject("MyTracker");
+		internal GameObject TrackerCube;
+		internal SteamVR_ControllerManager TrackersManager;
 
 
 	}
