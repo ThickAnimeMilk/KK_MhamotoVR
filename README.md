@@ -1,11 +1,7 @@
 # KK_MhamotoVR
-"My hips are moving on their own! VR". A crappily ported fork of KK_SetParentVR that aims to automate certain features, for a hassle-free tracked hip experience. May or may not be fully ported to BepInEx 5.
+"My hips are moving on their own! VR". A crappily ported fork of KK_SetParentVR that adds Vive tracker support. The main goal is syncing the virtual girl with a sex doll through 6 vive trackers, but as an intermediate step, a female Possesion mode is being worked on, using the HMD, controllers and 3 vive trackers.
 
 To install, just unzip the .dll from releases into your koikatsu install's BepInEx folder. Make sure you don't have KK_SetParentVR enabled, as this mod is a filthy hack of that one and uses the same input etc.
-To use the mod, once you're loaded in VR free-H: face the girl (like in the demo video, if using hip, make the hip face you as well). Put your right controller on your hip's bellybutton and hold the "B" button for a second.
-
-Recommended to use with a fapquesti or something similar you made out of cardboard. ( https://www.thingiverse.com/thing:4582472 )
-
-Current proof of concept demo video: https://files.catbox.moe/0531wv.mp4
+To start the mod, hold the "B" button for a second when in the free-H scene.
 
 Link to KK_SetParentVR: https://github.com/MayouKurayami/KK_SetParentVR
