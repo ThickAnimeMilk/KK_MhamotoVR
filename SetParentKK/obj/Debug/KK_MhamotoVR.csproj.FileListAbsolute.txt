@@ -1,5 +1,3 @@
-F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\KK_SetParentVR.dll
-F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\KK_SetParentVR.pdb
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\0Harmony.dll
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\0Harmony_BepInEx4.dll
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\Assembly-CSharp-firstpass.dll
@@ -30,5 +28,7 @@ F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\MonoMod.RuntimeDetour.
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.csproj.AssemblyReference.cache
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.csproj.CoreCompileInputs.cache
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.csproj.CopyComplete
-F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_SetParentVR.dll
-F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_SetParentVR.pdb
+F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\KK_MhamotoVR.dll
+F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\KK_MhamotoVR.pdb
+F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.dll
+F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.pdb

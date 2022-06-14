@@ -31,17 +31,17 @@ namespace SetParentKK
 
 		private void LoadFromLoader()
 		{
-			animMinThreshold = KK_SetParentVR.AnimStartThreshold.Value;
-			animMaxThreshold = KK_SetParentVR.AnimMaxThreshold.Value;
-			moveDistancePoolSize = KK_SetParentVR.MoveDistancePoolSize.Value;
+			animMinThreshold = KK_MhamotoVR.AnimStartThreshold.Value;
+			animMaxThreshold = KK_MhamotoVR.AnimMaxThreshold.Value;
+			moveDistancePoolSize = KK_MhamotoVR.MoveDistancePoolSize.Value;
 			moveDistance = new float[moveDistancePoolSize];
-			calcPattern = (int)KK_SetParentVR.CalcController.Value;
-			finishCount = KK_SetParentVR.Finishcount.Value;
-			moveCoordinatePoolSize = KK_SetParentVR.MoveCoordinatePoolSize.Value;
+			calcPattern = (int)KK_MhamotoVR.CalcController.Value;
+			finishCount = KK_MhamotoVR.Finishcount.Value;
+			moveCoordinatePoolSize = KK_MhamotoVR.MoveCoordinatePoolSize.Value;
 			moveCoordinate = new Vector3[moveCoordinatePoolSize];
-			strongMotionThreshold = KK_SetParentVR.StrongMotionThreshold.Value;
-			weakMotionThreshold = KK_SetParentVR.WeakMotionThreshold.Value;
-			strongMotionMultiplier = KK_SetParentVR.StrongThresholdMultiplier.Value;
+			strongMotionThreshold = KK_MhamotoVR.StrongMotionThreshold.Value;
+			weakMotionThreshold = KK_MhamotoVR.WeakMotionThreshold.Value;
+			strongMotionMultiplier = KK_MhamotoVR.StrongThresholdMultiplier.Value;
 		}
 
 		private void Update()

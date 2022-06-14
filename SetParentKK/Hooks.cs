@@ -3,7 +3,7 @@ using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 using static ItemObject;
-using static SetParentKK.KK_SetParentVR;
+using static SetParentKK.KK_MhamotoVR;
 
 namespace SetParentKK
 {

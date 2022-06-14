@@ -16,7 +16,7 @@ using UnityEngine.Networking;
 using System.Collections;
 using Valve.VR;
 using System.IO;
-using static SetParentKK.KK_SetParentVR;
+using static SetParentKK.KK_MhamotoVR;
 
 namespace SetParentKK
 {

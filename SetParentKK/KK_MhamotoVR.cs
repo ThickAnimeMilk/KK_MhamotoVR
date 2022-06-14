@@ -13,12 +13,12 @@ namespace SetParentKK
 	[BepInProcess("KoikatuVR")]
 	[BepInProcess("Koikatsu Party")]
 	[BepInProcess("Koikatsu Party VR")]
-	public class KK_SetParentVR : BaseUnityPlugin
+	public class KK_MhamotoVR : BaseUnityPlugin
 	{
-		public const string GUID = "MK.KK_SetParentVR";
-		public const string Version = "2.1.8";
-		public const string PluginName = "SetParentVR";
-		public const string AssembName = "KK_SetParentVR";
+		public const string GUID = "cum.ThickAnimeMilk.kkVR.KK_MhamotoVR";
+		public const string Version = "0.1.0";
+		public const string PluginName = "MhamotoVR";
+		public const string AssembName = "KK_MhamotoVR";
 		internal static SetParent setParentObj;
 
 		#region Config properties

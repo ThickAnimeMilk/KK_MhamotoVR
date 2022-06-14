@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{F561250A-A941-41DF-B90D-26B8E054EDED}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>SetParentKK</RootNamespace>
-    <AssemblyName>KK_SetParentVR</AssemblyName>
+    <RootNamespace>MhamotoVR</RootNamespace>
+    <AssemblyName>KK_MhamotoVR</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -38,7 +38,7 @@
     <Compile Include="FixBodyParts.cs" />
     <Compile Include="SetParentBodyParts.cs" />
     <Compile Include="SetParentControllerInput.cs" />
-    <Compile Include="KK_SetParentVR.cs" />
+    <Compile Include="KK_MhamotoVR.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SetParent.cs" />
     <Compile Include="Hooks.cs" />

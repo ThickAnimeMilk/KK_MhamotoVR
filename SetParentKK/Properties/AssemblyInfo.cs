@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using static SetParentKK.KK_SetParentVR;
+using static SetParentKK.KK_MhamotoVR;
 
 [assembly: AssemblyVersion(Version)]
 [assembly: AssemblyTitle(AssembName)]
@@ -8,7 +8,7 @@ using static SetParentKK.KK_SetParentVR;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct(AssembName)]
-[assembly: AssemblyCopyright("Copyright ©  2020")]
+[assembly: AssemblyCopyright("Copyright ©  2022")]
 [assembly: AssemblyTrademark("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("4f8334c7-c70a-4d1b-bab4-77ed18a86daa")]

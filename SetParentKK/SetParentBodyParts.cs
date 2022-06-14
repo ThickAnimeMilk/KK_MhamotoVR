@@ -2,7 +2,7 @@
 using UnityEngine;
 using RootMotion.FinalIK;
 using Illusion.Component.Correct;
-using static SetParentKK.KK_SetParentVR;
+using static SetParentKK.KK_MhamotoVR;
 
 
 namespace SetParentKK

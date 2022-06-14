@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using static SetParentKK.KK_SetParentVR;
+using static SetParentKK.KK_MhamotoVR;
 
 namespace SetParentKK
 {
