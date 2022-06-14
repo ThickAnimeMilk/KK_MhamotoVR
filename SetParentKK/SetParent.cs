@@ -258,7 +258,7 @@ namespace SetParentKK
 						}
 
 						MhamotoCounter++;
-						MhamotoState = MhamotoCounter % 4;
+						MhamotoState = MhamotoCounter % 2;
 
 						switch(MhamotoState)
                         {
@@ -270,21 +270,7 @@ namespace SetParentKK
 							case 1:
                                 {
 									ResetState();
-									InitMhamotoSpeak();
-									//InitMhamotoSync();
-									break;
-                                }
-							case 2:
-                                {
-									ResetState();
 									InitFPOV();
-									//InitFPOV();		// Needs to be done twice to work correctly for some reason
-									break;
-								}
-							case 3:
-                                {
-									ResetState();
-									InitDakiMode();
 									break;
                                 }
 							default:
@@ -301,24 +287,9 @@ namespace SetParentKK
 					hideCount = 0f;
 				}
 
-				if (MhamotoStarted)		// Every frame, after Mhamoto is initialized by holding the B button for a second.
-                {
-					MhamotoSync();
-				}
-
                 if (FPOVStarted)
                 {
                     FPOV();
-                }
-
-				if (DakiModeStarted)
-                {
-					DakiMode();
-                }
-
-				if (MhamotoSpeakStarted)
-                {
-					MhamotoSpeak();
                 }
 
 				//Make floating menu follow and rotate around female
@@ -758,16 +729,20 @@ namespace SetParentKK
 		}
 
 
-		private void SetParentToController (GameObject parentDummy, GameObject target, bool hideModel, bool notParentSide = false)
+		private void SetParentToController(GameObject parentDummy, GameObject target, bool hideModel, bool notParentSide = false)
 		{
 			GameObject controller = ParentSideController(notParentSide);
 
 
 
-			if (DakiModeStarted)
-				parentDummy.transform.parent = ViveTracker.transform;
+			if (FPOVStarted)
+			{
+				//parentDummy.transform.parent = MyTracker.transform;
+			}
 			else
+			{ 
 				parentDummy.transform.parent = controller.transform;
+			}
 
 			if (hideModel)
 			{
@@ -779,19 +754,15 @@ namespace SetParentKK
 				}		
 			}
 
-			if (DakiModeStarted)
+			if (FPOVStarted)
 			{
-				parentDummy.transform.position = ViveTracker.transform.position;
-				parentDummy.transform.rotation = ViveTracker.transform.rotation;
+				//parentDummy.transform.position = MyTracker.transform.position;
+				//parentDummy.transform.rotation = MyTracker.transform.rotation;
 			}
 			else
 			{
-				// MhamotoVR: get rid of the offset between controller and girl.
-				parentDummy.transform.position = controller.transform.position + BellyButtonOffset;
-				//parentDummy.transform.position = target.transform.position;
-				//parentDummy.transform.rotation = target.transform.rotation;
-				// MhamotoVR: Match up the girl's rotation with the hip
-				parentDummy.transform.rotation = Quaternion.LookRotation(HipAbstraction.transform.forward, HipAbstraction.transform.up);
+				parentDummy.transform.position = target.transform.position;
+				parentDummy.transform.rotation = target.transform.rotation;
 			}
 
 		}
@@ -943,220 +914,6 @@ namespace SetParentKK
 			return false;
 		}
 
-		private void InitMhamotoSync ()
-        {
-
-			//Controller that presses B
-			InitController = controllers[Side.Right];
-			// Set left controller initial reference transform
-			ControllerMhamoto = controllers[Side.Left];
-			ControllerInitState.transform.rotation = ControllerMhamoto.transform.rotation;
-			HipAbstraction.transform.parent = ControllerMhamoto.transform;
-			
-			//Calculate the offset between parented controller and bellybutton
-			BellyButtonOffset = InitController.transform.position - ControllerMhamoto.transform.position;
-			InitialBellyButtonOffset = BellyButtonOffset;
-
-			HipAbstraction.transform.position = InitController.transform.position;
-			HipAbstraction.transform.rotation = ControllerMhamoto.transform.rotation;
-
-			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
-			HMDAbstraction.transform.rotation = Quaternion.LookRotation(CameraForwardNoUp, Vector3.up);
-			// Hip is supposed to stand opposite of player on init.
-			HipAbstraction.transform.rotation = Quaternion.LookRotation(-HMDAbstraction.transform.forward, Vector3.up);
-
-			// Parent and set initial pose
-			PushSetParentButton(true);                                                    // Parent girl to left controller
-			var scene = FindObjectOfType<VRHScene>();
-
-			// Find all the HPointDatas
-			ActionMap map = Singleton<Scene>.Instance.commonSpace.GetComponentInChildren<ActionMap>();
-			List<GameObject> objs = GlobalMethod.LoadAllFolder<GameObject>("h/common/", "HPoint_" + map.no, null, null);
-			GameObject objPointFree = UnityEngine.Object.Instantiate<GameObject>(objs[objs.Count - 1]);
-			HPointData[] datas = objPointFree.GetComponentsInChildren<HPointData>(true);
-
-			// Find the H-point closest to us.
-			CurrentHPoint = datas[0];
-			foreach (HPointData ahpointdata in datas)
-			{
-				float distance = Vector3.Distance(ahpointdata.transform.position, cameraEye.transform.position);
-				if (distance < ClosestHpointDistance)
-				{
-					ClosestHpointDistance = distance;
-					CurrentHPoint = ahpointdata;
-				}
-
-			}
-			ClosestHpointDistance = 9999999f;
-
-			// Changes to Sonyu
-			//scene.ChangeCategory(CurrentHPoint, 2);
-
-			//HSceneProc.AnimationListInfo animlistinfo = hFlag.selectAnimationListInfo;						// Breaks stuff
-			//animlistinfo.mode = HFlag.EMode.sonyu;															// Breaks stuff
-			//animlistinfo.nameAnimation = "khs_f_n10";	// Change the selected animation to reverse cowgirl
-
-			// Change the H mode to Sonyu
-			//hFlag.mode = HFlag.EMode.sonyu;				// Doesn't break anything
-			
-						// Doesn't break anything
-			//hFlag.click = HFlag.ClickKind.slow;
-			//hFlag.click = HFlag.ClickKind.actionChange;
-
-
-			//hSprite.SetSonyuStart();					// Doesn't break anything
-
-
-			//hFlag.nowAnimationInfo.nameAnimation = "khs_f_02";
-			//hFlag.nowAnimStateName = "WLoop";			// Breaks stuff
-			//sonyu.SetPlay("khs_f_n04");
-			//hFlag.nowAnimStateName = "InsertIdle";
-			//hFlag.click = HFlag.ClickKind.modeChange;	// Breaks stuff
-
-
-			//sonyu = Traverse.Create(scene).Field("lstProc").GetValue<List<HActionBase>>().OfType<HSonyu>().FirstOrDefault();		// Doesn't break anything
-			//sonyu.Proc();                   // Doesn't break anything
-
-
-			//hFlag.nowAnimationInfo.nameAnimation = "Doggystyle";
-			//sonyu.SetPlay("SLoop", true);
-			
-
-
-			/* //This code doesn't break anything
-            HSceneProc.AnimationListInfo MyAnimList = hFlag.nowAnimationInfo;
-            MyAnimList.mode = HFlag.EMode.sonyu;
-            MyAnimList.nameAnimation = "Doggystyle";
-            scene.flags.selectAnimationListInfo = MyAnimList;
-
-			hSprite.OnInsertNoVoiceClick();
-
-			hFlag.nowAnimStateName = "WLoop";
-			*/
-
-
-
-			//public bool SonyuProc()
-
-
-			StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n10"));        //Change girl to reverse cowgirl pose, somehow makes things work.
-			LockedPose = PoseType.ReverseCowgirl;
-			//PushSetParentButton(true);
-			SetP(true);                                                                         // Necessary to stop the girl from drifting away from our controller
-
-			  
-			MhamotoStarted = true;
-		}
-
-		private void MhamotoSync ()
-        {
-			//Get controller relative rotation compared to start transform
-			Quaternion rotationDelta =  ControllerMhamoto.transform.rotation * Quaternion.Inverse(ControllerInitState.transform.rotation);
-
-			BellyButtonOffset = rotationDelta * InitialBellyButtonOffset;
-			//HipAbstraction.transform.position = ControllerMhamoto.transform.position - BellyButtonOffset;		// For debugging laser pointer
-
-			// Update HMD abstract reference transform
-			Vector3 CameraForwardNoUp = new Vector3(cameraEye.transform.forward.x, 0, cameraEye.transform.forward.z);
-			HMDAbstraction.transform.rotation = Quaternion.LookRotation(CameraForwardNoUp, Vector3.up);
-
-			HMDAbstraction.transform.position = cameraEye.transform.position;       // For debugging laser pointer
-
-			Vector3 UpBackRight = Vector3.Normalize(new Vector3(-1, 1, 1));
-			Vector3 firstvec = HipAbstraction.transform.TransformDirection(UpBackRight);
-			Vector3 secondvec = HMDAbstraction.transform.InverseTransformDirection(firstvec);
-
-			// Debugging line renders
-			//DrawLine(HipAbstraction.transform.position, HipAbstraction.transform.position + firstvec * 100, Color.red);
-			//DrawLine(HMDAbstraction.transform.position, HMDAbstraction.transform.position + HMDAbstraction.transform.forward * 100, Color.white);
-
-
-			// Get Dot products, for determining in which pose quadrant we are in.
-			float PoseVectorDotForwardUp = Vector3.Dot(firstvec, HMDAbstraction.transform.up);
-			float PoseVectorDotForwardRight = Vector3.Dot(firstvec, HMDAbstraction.transform.right);
-			float PoseVectorDotForwardForward = Vector3.Dot(firstvec, HMDAbstraction.transform.forward);
-
-			//float PoseVectorDotUpUp = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.up);
-			//float PoseVectorDotUpRight = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.right);
-			//float PoseVectorDotUpForward = Vector3.Dot(HipAbstraction.transform.up, HMDAbstraction.transform.forward);
-
-			// Logging for debugging
-			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
-
-			
-
-			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward < 0))
-            {
-				if (LockedPose != PoseType.Carrying)
-				{
-					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n04"));        //Change girl to cowgirl(strength) pose
-					SetP(true);
-					//sonyu.SetPlay("khs_f_n04");
-					LockedPose = PoseType.Carrying;
-					myLogSource.LogInfo("Entered Carrying");
-					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
-					myLogSource.LogInfo(PoseVectorDotForwardUp);
-					myLogSource.LogInfo(PoseVectorDotForwardRight);
-					myLogSource.LogInfo(PoseVectorDotForwardForward);
-				}
-			}
-
-			if ((PoseVectorDotForwardUp < 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
-			{
-				/*
-				if (LockedPose != PoseType.Doggy)
-				{
-					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
-					SetP(true);
-					//sonyu.SetPlay("khs_f_02");
-					LockedPose = PoseType.Doggy;
-					myLogSource.LogInfo("Entered Doggy");
-					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
-					myLogSource.LogInfo(PoseVectorDotForwardUp);
-					myLogSource.LogInfo(PoseVectorDotForwardRight);
-					myLogSource.LogInfo(PoseVectorDotForwardForward);
-				}
-				*/
-			}
-
-			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight > 0) && (PoseVectorDotForwardForward > 0))
-			{
-				/*
-				 if (LockedPose != PoseType.Missionary)
-				{
-					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_n00"));        //Change girl to Mating press pose
-					SetP(true);
-					//sonyu.SetPlay("khs_f_00");
-					LockedPose = PoseType.Missionary;
-					myLogSource.LogInfo("Entered Missionary");
-					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
-					myLogSource.LogInfo(PoseVectorDotForwardUp);
-					myLogSource.LogInfo(PoseVectorDotForwardRight);
-					myLogSource.LogInfo(PoseVectorDotForwardForward);
-				}
-				*/
-			}
-
-			if ((PoseVectorDotForwardUp > 0) && (PoseVectorDotForwardRight < 0) && (PoseVectorDotForwardForward > 0))
-			{
-				if (LockedPose != PoseType.ReverseCowgirl)
-				{
-					StartCoroutine(ChangeMotion("h/anim/female/02_00_00.unity3d", "khs_f_02"));        //Change girl to kneeling doggystyle pose
-					SetP(true);
-					//sonyu.SetPlay("khs_f_n10");
-					LockedPose = PoseType.ReverseCowgirl;
-					myLogSource.LogInfo("Entered ReverseCowgirl");
-					myLogSource.LogInfo("PoseVectorDot Forward Up, right, forward: ");
-					myLogSource.LogInfo(PoseVectorDotForwardUp);
-					myLogSource.LogInfo(PoseVectorDotForwardRight);
-					myLogSource.LogInfo(PoseVectorDotForwardForward);
-				}
-			}
-
-			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
-
-		}
-
         void InitFPOV()
         {
 			if (FPOVHeadDummy.transform.parent == null)
@@ -1175,16 +932,6 @@ namespace SetParentKK
 			controllers[Side.Right].transform.parent = female_cf_j_head.transform;
 			controllers[Side.Left].transform.parent = female_cf_j_head.transform;
 
-			FPOVStarted = true;
-        }
-
-        void FPOV()
-        {
-            return;
-        }
-
-		void InitDakiMode()
-        {
 			TrackersManager = FindObjectOfType<SteamVR_ControllerManager>();
 
 			TrackerCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -1199,30 +946,18 @@ namespace SetParentKK
 
 			//Attach Cube to tracker
 			TrackerCube.transform.position = MyTracker.transform.position;
-			//TrackerSphere.transform.parent = MyTracker.transform;
 			TrackerCube.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
 
-			DakiModeStarted = true;
-
-			return;
+			FPOVStarted = true;
         }
 
-		void DakiMode()
+        void FPOV()
         {
 			//Update Tracker
 			TrackerCube.transform.position = MyTracker.transform.position;
 			TrackerCube.transform.rotation = MyTracker.transform.rotation;
 			TrackerCube.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
 
-			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
-			
-			myLogSource.LogInfo("Left controller world pos: ");
-			myLogSource.LogInfo(controllers[Side.Left].transform.position);
-			myLogSource.LogInfo("Tracker world pos: ");
-			myLogSource.LogInfo(TrackerCube.transform.position);
-
-
-			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 			return;
         }
 
@@ -1257,9 +992,7 @@ namespace SetParentKK
 			//if (DakiModeStarted)
 				//female_cf_j_hips.transform.parent = OriginalFemaleParent;
 
-			MhamotoStarted = false;
 			FPOVStarted = false;
-			DakiModeStarted = false;
 
 			return;
 		}
@@ -1282,62 +1015,6 @@ namespace SetParentKK
 			lr.SetPosition(0, start);
 			lr.SetPosition(1, end);
 			GameObject.Destroy(myLine, duration);
-		}
-
-		void InitMhamotoSpeak()
-        {
-			CreateFileWatcher(@"F:\SteamLibrary\steamapps\common\SkyrimVR\Data\Sound\fx\ConvAiFollower");
-
-			MhamotoSpeakStarted = true;
-        }
-
-		void MhamotoSpeak()
-        {
-
-        }
-
-		public static AudioClip LoadAudioClip(string path, AudioType type)
-		{
-			AudioClip result;
-			using (WWW www = new WWW(BepInEx4.Utility.ConvertToWWWFormat(path)))
-			{
-				AudioClip audioClipCompressed = www.GetAudioClipCompressed(false, type);
-				while (audioClipCompressed.loadState != AudioDataLoadState.Loaded)
-				{
-				}
-				result = audioClipCompressed;
-			}
-			return result;
-		}
-
-		public void CreateFileWatcher(string path)
-		{
-			// Create a new FileSystemWatcher and set its properties.
-			FileSystemWatcher watcher = new FileSystemWatcher();
-			watcher.Path = path;
-			/* Watch for changes in LastAccess and LastWrite times, and 
-			   the renaming of files or directories. */
-			watcher.NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite
-			   | NotifyFilters.FileName | NotifyFilters.DirectoryName;
-			// Only watch text files.
-			watcher.Filter = "*.wav";
-
-			// Add event handlers.
-			watcher.Changed += new FileSystemEventHandler(OnChanged);
-			watcher.Created += new FileSystemEventHandler(OnChanged);
-			watcher.Deleted += new FileSystemEventHandler(OnChanged);
-
-			// Begin watching.
-			watcher.EnableRaisingEvents = true;
-		}
-
-		// Define the event handlers.
-		void OnChanged(object source, FileSystemEventArgs e)
-		{
-			audioSource = gameObject.AddComponent<AudioSource>();
-			audioSource.clip = LoadAudioClip("F:/SteamLibrary/steamapps/common/SkyrimVR/Data/Sound/fx/ConvAiFollower/output.wav", AudioType.WAV);
-
-			audioSource.Play(0);
 		}
 
 		/// <summary>
@@ -1461,10 +1138,8 @@ namespace SetParentKK
 
 		private float[] lastTriggerRelease = new float[4] { 0, 0 ,0 ,0};
 
-		private bool MhamotoStarted = false;
 
-		Vector3 BellyButtonOffset;
-		Vector3 InitialBellyButtonOffset;
+		//MhamotoVR
 
 		internal GameObject ControllerInitState = new GameObject("ControllerInitState");
 
@@ -1478,12 +1153,6 @@ namespace SetParentKK
 
 		internal GameObject HMDAbstraction = new GameObject("HMDAbstraction");
 
-		internal HSonyu sonyu;
-
-		float ClosestHpointDistance = 9999999f;
-
-		internal HPointData CurrentHPoint;
-
         bool FPOVStarted = false;
 
 		internal GameObject FPOVHeadDummy = new GameObject();
@@ -1494,37 +1163,10 @@ namespace SetParentKK
 
 		int MhamotoState = 0;
 
-		bool DakiModeStarted = false;
-
 		Transform OriginalHMDParent = null;
 		Transform OriginalLeftControllerParent = null;
 		Transform OriginalRightControllerParent = null;
 		Transform OriginalFemaleParent = null;
-
-		CVRSystem vrSystem = OpenVR.System;
-		TrackedDevicePose_t[] allPoses = new TrackedDevicePose_t[OpenVR.k_unMaxTrackedDeviceCount];
-
-		internal GameObject ViveTracker = new GameObject("ViveTracker");
-		SteamVR_TrackedObject[] FoundTrackedObjs;
-
-		internal GameObject DakiCameraDummy = new GameObject();
-		internal GameObject RawTrackerInfo = new GameObject("RawTrackerInfo");
-
-		bool MhamotoSpeakStarted = false;
-
-		AudioSource audioSource;
-
-
-		internal enum PoseType
-		{
-			Carrying,
-			Doggy,
-			Missionary,
-			Cowgirl,
-			ReverseCowgirl,
-			Spooning
-		}
-		PoseType LockedPose;
 
 		internal GameObject MyTracker = new GameObject("MyTracker");
 		internal GameObject TrackerCube;
