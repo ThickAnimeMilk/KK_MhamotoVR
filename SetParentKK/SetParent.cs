@@ -291,7 +291,10 @@ namespace SetParentKK
 				{
 					hideCount = 0f;
 				}
-
+				if (FBTCalibrationStarted)
+                {
+					FBTCalibration();
+                }
                 if (FPOVStarted)
                 {
                     FPOV();
@@ -933,8 +936,10 @@ namespace SetParentKK
 			//FPOVHeadDummy.transform.localPosition = new Vector3(0, 0, 0);
 			cameraEye.transform.parent = FPOVHeadDummy.transform;
 
-			controllers[Side.Right].transform.parent = female_cf_j_head.transform;
-			controllers[Side.Left].transform.parent = female_cf_j_head.transform;
+			//controllers[Side.Right].transform.parent = female_cf_j_head.transform;
+			//controllers[Side.Left].transform.parent = female_cf_j_head.transform;
+			controllers[Side.Right].transform.parent = FPOVHeadDummy.transform;
+			controllers[Side.Left].transform.parent = FPOVHeadDummy.transform;
 
 
 			//Spawn trackers with cubes
@@ -945,7 +950,17 @@ namespace SetParentKK
 				NewTracker.Init(TrackersManager, this);
 				MyTrackers.Add(NewTracker);
             }
+
+			FBTCalibrationStarted = true;
 		}
+
+		void FBTCalibration()
+        {
+			foreach (ViveTracker UpdateTracker in MyTrackers)
+            {
+				UpdateTracker.LateUpdate();
+            }
+        }
 
 
 		void InitFPOV()
@@ -1134,6 +1149,8 @@ namespace SetParentKK
 		internal GameObject HMDAbstraction = new GameObject("HMDAbstraction");
 
         bool FPOVStarted = false;
+
+		bool FBTCalibrationStarted = false;
 
 		internal GameObject FPOVHeadDummy = new GameObject();
 

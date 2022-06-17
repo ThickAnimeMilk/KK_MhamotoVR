@@ -13,6 +13,7 @@ namespace SetParentKK
         {
             TrackersManager = _TrackersManager;
             SetParentObj = _SetParentObj;
+            Start();
         }
 
         public void Start()
