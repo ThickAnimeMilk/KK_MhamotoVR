@@ -43,6 +43,7 @@
     <Compile Include="SetParent.cs" />
     <Compile Include="Hooks.cs" />
     <Compile Include="SetParentUI.cs" />
+    <Compile Include="ViveTracker.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">

@@ -258,7 +258,7 @@ namespace SetParentKK
 						}
 
 						MhamotoCounter++;
-						MhamotoState = MhamotoCounter % 2;
+						MhamotoState = MhamotoCounter % 3;
 
 						switch(MhamotoState)
                         {
@@ -270,9 +270,14 @@ namespace SetParentKK
 							case 1:
                                 {
 									ResetState();
-									InitFPOV();
+									InitFBTCalibration();
 									break;
                                 }
+							case 2:
+                                {
+									InitFPOV();
+									break;
+								}
 							default:
                                 {
 									ResetState();
@@ -914,69 +919,44 @@ namespace SetParentKK
 			return false;
 		}
 
-        void InitFPOV()
+		void InitFBTCalibration()
         {
+			//Teleport to girl's location
 			if (FPOVHeadDummy.transform.parent == null)
 			{
 				FPOVHeadDummy.transform.position = female_cf_j_head.transform.position;
 				FPOVHeadDummy.transform.rotation = female_cf_j_head.transform.rotation;
 
-				FPOVHeadDummy.transform.parent = female_cf_j_head.transform;
+				//FPOVHeadDummy.transform.parent = female_cf_j_head.transform;
 			}
 
-			FPOVHeadDummy.transform.localPosition = new Vector3(0, 0, 0);
+			//FPOVHeadDummy.transform.localPosition = new Vector3(0, 0, 0);
 			cameraEye.transform.parent = FPOVHeadDummy.transform;
-
-			//FPOVHeadDummy.transform.localPosition = -cameraEye.transform.localPosition;
 
 			controllers[Side.Right].transform.parent = female_cf_j_head.transform;
 			controllers[Side.Left].transform.parent = female_cf_j_head.transform;
 
+
+			//Spawn trackers with cubes
 			TrackersManager = FindObjectOfType<SteamVR_ControllerManager>();
-
-			TrackerCube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-
-			// Setting up the tracker
-			MyTracker.transform.parent = cameraEye.transform.parent;
-			SteamVR_TrackedObject MyTrackedObject = MyTracker.AddComponent<SteamVR_TrackedObject>() as SteamVR_TrackedObject;
-			int TrackerIndex = (int)FindTrackerIndex();
-			MyTrackedObject.SetDeviceIndex(TrackerIndex);
-			TrackersManager.objects.SetValue(MyTracker, TrackerIndex);
+			for (int i = 0; i < NumTrackers;  i++)
+            {
+				ViveTracker NewTracker = new ViveTracker();
+				NewTracker.Init(TrackersManager, this);
+				MyTrackers.Add(NewTracker);
+            }
+		}
 
 
-			//Attach Cube to tracker
-			TrackerCube.transform.position = MyTracker.transform.position;
-			TrackerCube.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
-
+		void InitFPOV()
+        {
 			FPOVStarted = true;
         }
 
         void FPOV()
         {
-			//Update Tracker
-			TrackerCube.transform.position = MyTracker.transform.position;
-			TrackerCube.transform.rotation = MyTracker.transform.rotation;
-			TrackerCube.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
-
 			return;
         }
-
-		uint FindTrackerIndex()
-		{
-			uint index = 0;
-			var error = ETrackedPropertyError.TrackedProp_Success;
-			for (uint i = 0; i < 16; i++)
-			{
-				var result = new System.Text.StringBuilder((int)64);
-				OpenVR.System.GetStringTrackedDeviceProperty(i, ETrackedDeviceProperty.Prop_RenderModelName_String, result, 64, ref error);
-				if (result.ToString().Contains("tracker"))
-				{
-					index = i;
-					return index;
-				}
-			}
-			return 0;
-		}
 
 		void ResetState()
         {
@@ -1080,7 +1060,7 @@ namespace SetParentKK
 		
 		internal GameObject parentController;
 
-		private GameObject cameraEye;
+		public GameObject cameraEye;
 
 		private GameObject shoulderCollider;
 
@@ -1168,10 +1148,9 @@ namespace SetParentKK
 		Transform OriginalRightControllerParent = null;
 		Transform OriginalFemaleParent = null;
 
-		internal GameObject MyTracker = new GameObject("MyTracker");
-		internal GameObject TrackerCube;
+		internal int NumTrackers = 3;
+		public List<uint> FoundTrackerIndices = new List<uint>();
+		public List<ViveTracker> MyTrackers = new List<ViveTracker>();
 		internal SteamVR_ControllerManager TrackersManager;
-
-
 	}
 }
