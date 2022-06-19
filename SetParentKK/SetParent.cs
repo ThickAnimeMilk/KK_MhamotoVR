@@ -929,15 +929,10 @@ namespace SetParentKK
 			{
 				FPOVHeadDummy.transform.position = female_cf_j_head.transform.position;
 				FPOVHeadDummy.transform.rotation = female_cf_j_head.transform.rotation;
-
-				//FPOVHeadDummy.transform.parent = female_cf_j_head.transform;
 			}
 
-			//FPOVHeadDummy.transform.localPosition = new Vector3(0, 0, 0);
 			cameraEye.transform.parent = FPOVHeadDummy.transform;
 
-			//controllers[Side.Right].transform.parent = female_cf_j_head.transform;
-			//controllers[Side.Left].transform.parent = female_cf_j_head.transform;
 			controllers[Side.Right].transform.parent = FPOVHeadDummy.transform;
 			controllers[Side.Left].transform.parent = FPOVHeadDummy.transform;
 
@@ -965,6 +960,10 @@ namespace SetParentKK
 
 		void InitFPOV()
         {
+			// Find tracker closest to bone
+
+			// Parent bone to tracker
+
 			FPOVStarted = true;
         }
 
@@ -972,6 +971,29 @@ namespace SetParentKK
         {
 			return;
         }
+
+		ViveTracker FindNearestTracker(Vector3 pos)
+        {
+			//Initialize the shortest things to the first tracker found
+			ViveTracker ClosestTracker = MyTrackers[0];
+			float ShortestDistance = Vector3.Distance(ClosestTracker.Tracker.transform.position, pos);
+
+			// Loop through all the trackers and compare to find the closest tracker
+			foreach (ViveTracker Findtracker in MyTrackers)
+            {
+				Vector3 trackerpos = Findtracker.Tracker.transform.position;
+				float distance = Vector3.Distance(trackerpos, pos);
+				if (distance < ShortestDistance)
+                {
+					ShortestDistance = distance;
+					ClosestTracker = Findtracker;
+                }
+
+            }
+
+			return ClosestTracker;
+
+		}
 
 		void ResetState()
         {
