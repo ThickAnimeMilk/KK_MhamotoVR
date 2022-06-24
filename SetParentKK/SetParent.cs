@@ -745,7 +745,7 @@ namespace SetParentKK
 
 			if (FPOVStarted)
 			{
-				//parentDummy.transform.parent = MyTracker.transform;
+				parentDummy.transform.parent = FindNearestTracker(target.transform.position).Tracker.transform;
 			}
 			else
 			{ 
@@ -766,6 +766,8 @@ namespace SetParentKK
 			{
 				//parentDummy.transform.position = MyTracker.transform.position;
 				//parentDummy.transform.rotation = MyTracker.transform.rotation;
+				parentDummy.transform.position = target.transform.position;
+				parentDummy.transform.rotation = target.transform.rotation;
 			}
 			else
 			{
@@ -961,8 +963,21 @@ namespace SetParentKK
 		void InitFPOV()
         {
 			// Find tracker closest to bone
+			Limb GirlLeftFoot = setParentObj.limbs[(int)LimbName.FemaleLeftFoot];
+			LeftFootTracker = FindNearestTracker(GirlLeftFoot.AnimPos.position);
+
+			Limb GirlRightFoot = setParentObj.limbs[(int)LimbName.FemaleRightFoot];
+			RightFootTracker = FindNearestTracker(GirlRightFoot.AnimPos.position);
 
 			// Parent bone to tracker
+
+			//setParentObj.FixLimbToggle(setParentObj.limbs[(int)limbName], true);
+			//setParentObj.limbs[(int)limbName].AnchorObj.transform.parent = other.transform;
+			setParentObj.FixLimbToggle(GirlLeftFoot, true);
+			GirlLeftFoot.AnchorObj.transform.parent = LeftFootTracker.TrackerCube.transform;
+
+			setParentObj.FixLimbToggle(GirlRightFoot, true);
+			GirlRightFoot.AnchorObj.transform.parent = RightFootTracker.TrackerCube.transform;
 
 			FPOVStarted = true;
         }
@@ -1191,5 +1206,7 @@ namespace SetParentKK
 		public List<uint> FoundTrackerIndices = new List<uint>();
 		public List<ViveTracker> MyTrackers = new List<ViveTracker>();
 		internal SteamVR_ControllerManager TrackersManager;
+		internal ViveTracker LeftFootTracker;
+		internal ViveTracker RightFootTracker;
 	}
 }
