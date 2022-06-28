@@ -34,8 +34,16 @@ namespace SetParentKK
             {
                 myLogSource.LogInfo(i);
             }
-            
 
+            myLogSource.LogInfo("Trackersmanager objects array length: ");
+            myLogSource.LogInfo(TrackersManager.objects.Length);
+            myLogSource.LogInfo("Trackersmanager objects array contents: ");
+            /*
+            foreach (GameObject obj in TrackersManager.objects)
+            {
+                myLogSource.LogInfo(obj.name);
+            }
+            */
             MyTrackedObject.SetDeviceIndex(TrackerIndex);
             TrackersManager.objects.SetValue(Tracker, TrackerIndex);
 

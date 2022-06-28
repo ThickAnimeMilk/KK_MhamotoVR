@@ -938,15 +938,31 @@ namespace SetParentKK
 			controllers[Side.Right].transform.parent = FPOVHeadDummy.transform;
 			controllers[Side.Left].transform.parent = FPOVHeadDummy.transform;
 
-
-			//Spawn trackers with cubes
 			TrackersManager = FindObjectOfType<SteamVR_ControllerManager>();
+
+			// Adjust the size of the tracked objects array
+			if (TrackersManager.objects.Length < 16)
+            {
+				GameObject[] DummyArray = new GameObject[TrackersManager.objects.Length];
+				TrackersManager.objects.CopyTo(DummyArray, 0);
+				Array.Resize<GameObject>(ref TrackersManager.objects, 16);
+				DummyArray.CopyTo(TrackersManager.objects, 0);
+			}
+			
+			//Spawn trackers with cubes
 			for (int i = 0; i < NumTrackers;  i++)
             {
 				ViveTracker NewTracker = new ViveTracker();
 				NewTracker.Init(TrackersManager, this);
 				MyTrackers.Add(NewTracker);
             }
+			
+			/*
+			Cube1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			Cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			Cube3 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			Cube4 = GameObject.CreatePrimitive(PrimitiveType.Cube);
+			*/
 
 			FBTCalibrationStarted = true;
 		}
@@ -957,7 +973,25 @@ namespace SetParentKK
             {
 				UpdateTracker.LateUpdate();
             }
-        }
+			
+			/*
+			Cube1.transform.position = TrackersManager.objects[0].transform.position;
+			Cube1.transform.rotation = TrackersManager.objects[0].transform.rotation;
+			Cube1.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+
+			Cube2.transform.position = TrackersManager.objects[1].transform.position;
+			Cube2.transform.rotation = TrackersManager.objects[1].transform.rotation;
+			Cube2.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+
+			Cube3.transform.position = TrackersManager.objects[2].transform.position;
+			Cube3.transform.rotation = TrackersManager.objects[2].transform.rotation;
+			Cube3.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+
+			Cube4.transform.position = TrackersManager.objects[3].transform.position;
+			Cube4.transform.rotation = TrackersManager.objects[3].transform.rotation;
+			Cube4.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
+			*/
+		}
 
 
 		void InitFPOV()
@@ -1036,12 +1070,9 @@ namespace SetParentKK
 			myLine.transform.position = start;
 			myLine.AddComponent<LineRenderer>();
 			LineRenderer lr = myLine.GetComponent<LineRenderer>();
-			//lr.material = new Material(Shader.Find("Particles/Alpha Blended Premultiply"));
 			lr.material = new Material(Shader.Find("Hidden/Internal-Colored")); 
-			//lr.SetColors(color, color);
 			lr.startColor = color;
 			lr.endColor = color;
-			//lr.SetWidth(0.1f, 0.1f);
 			lr.startWidth = 0.1f;
 			lr.endWidth = 0.1f;
 			lr.SetPosition(0, start);
@@ -1208,5 +1239,10 @@ namespace SetParentKK
 		internal SteamVR_ControllerManager TrackersManager;
 		internal ViveTracker LeftFootTracker;
 		internal ViveTracker RightFootTracker;
+
+		internal GameObject Cube1;
+		internal GameObject Cube2;
+		internal GameObject Cube3;
+		internal GameObject Cube4;
 	}
 }
