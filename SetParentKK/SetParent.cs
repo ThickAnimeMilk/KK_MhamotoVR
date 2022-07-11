@@ -740,6 +740,7 @@ namespace SetParentKK
 		private void SetParentToController(GameObject parentDummy, GameObject target, bool hideModel, bool notParentSide = false)
 		{
 			GameObject controller = ParentSideController(notParentSide);
+			GameObject OtherController = ParentSideController(!notParentSide);
 
 
 
@@ -759,7 +760,15 @@ namespace SetParentKK
 				if (SetControllerCollider.Value && !limbs[(int)ParentSideMaleHand(notParentSide)].AnchorObj)
 				{
 					controller.transform.Find("ControllerCollider").GetComponent<SphereCollider>().enabled = false;
-				}		
+				}
+
+				//MhamotoVR: Hide the other hand as well
+				OtherController.transform.Find("Model").gameObject.SetActive(false);
+
+				if (SetControllerCollider.Value && !limbs[(int)ParentSideMaleHand(!notParentSide)].AnchorObj)
+				{
+					OtherController.transform.Find("ControllerCollider").GetComponent<SphereCollider>().enabled = false;
+				}
 			}
 
 			if (FPOVStarted)
@@ -974,6 +983,7 @@ namespace SetParentKK
         {
 			FPOVStarted = true;
 
+
 			// Find tracker closest to bone
 			Limb GirlLeftFoot = setParentObj.limbs[(int)LimbName.FemaleLeftFoot];
 			LeftFootTracker = FindNearestTracker(GirlLeftFoot.AnimPos.position);
@@ -1004,10 +1014,17 @@ namespace SetParentKK
 			setParentObj.FixLimbToggle(GirlRightHand, true);
 			GirlRightHand.AnchorObj.transform.parent = controllers[Side.Right].transform;
 
-        }
+
+			//female_cf_j_head.transform.parent = cameraEye.transform;
+
+
+		}
 
         void FPOV()
         {
+			// Head, ignore height component or it will probably strecth the neck to giraffe levels
+			// female_cf_j_head.transform.position = new Vector3(cameraEye.transform.position.x, female_cf_j_head.transform.position.y, cameraEye.transform.position.z);
+			female_cf_j_head.transform.rotation = cameraEye.transform.rotation;
 			return;
         }
 
