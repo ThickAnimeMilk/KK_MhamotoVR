@@ -956,13 +956,6 @@ namespace SetParentKK
 				NewTracker.Init(TrackersManager, this);
 				MyTrackers.Add(NewTracker);
             }
-			
-			/*
-			Cube1 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			Cube2 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			Cube3 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			Cube4 = GameObject.CreatePrimitive(PrimitiveType.Cube);
-			*/
 
 			FBTCalibrationStarted = true;
 		}
@@ -973,29 +966,14 @@ namespace SetParentKK
             {
 				UpdateTracker.LateUpdate();
             }
-			
-			/*
-			Cube1.transform.position = TrackersManager.objects[0].transform.position;
-			Cube1.transform.rotation = TrackersManager.objects[0].transform.rotation;
-			Cube1.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
 
-			Cube2.transform.position = TrackersManager.objects[1].transform.position;
-			Cube2.transform.rotation = TrackersManager.objects[1].transform.rotation;
-			Cube2.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
-
-			Cube3.transform.position = TrackersManager.objects[2].transform.position;
-			Cube3.transform.rotation = TrackersManager.objects[2].transform.rotation;
-			Cube3.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
-
-			Cube4.transform.position = TrackersManager.objects[3].transform.position;
-			Cube4.transform.rotation = TrackersManager.objects[3].transform.rotation;
-			Cube4.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
-			*/
 		}
 
 
 		void InitFPOV()
         {
+			FPOVStarted = true;
+
 			// Find tracker closest to bone
 			Limb GirlLeftFoot = setParentObj.limbs[(int)LimbName.FemaleLeftFoot];
 			LeftFootTracker = FindNearestTracker(GirlLeftFoot.AnimPos.position);
@@ -1003,17 +981,29 @@ namespace SetParentKK
 			Limb GirlRightFoot = setParentObj.limbs[(int)LimbName.FemaleRightFoot];
 			RightFootTracker = FindNearestTracker(GirlRightFoot.AnimPos.position);
 
+			Limb GirlLeftHand = setParentObj.limbs[(int)LimbName.FemaleLeftHand];
+
+			Limb GirlRightHand = setParentObj.limbs[(int)LimbName.FemaleRightHand];
+
 			// Parent bone to tracker
 
 			//setParentObj.FixLimbToggle(setParentObj.limbs[(int)limbName], true);
 			//setParentObj.limbs[(int)limbName].AnchorObj.transform.parent = other.transform;
+
+			SetP(false);
+
 			setParentObj.FixLimbToggle(GirlLeftFoot, true);
 			GirlLeftFoot.AnchorObj.transform.parent = LeftFootTracker.TrackerCube.transform;
 
 			setParentObj.FixLimbToggle(GirlRightFoot, true);
 			GirlRightFoot.AnchorObj.transform.parent = RightFootTracker.TrackerCube.transform;
 
-			FPOVStarted = true;
+			setParentObj.FixLimbToggle(GirlLeftHand, true);
+			GirlLeftHand.AnchorObj.transform.parent = controllers[Side.Left].transform;
+
+			setParentObj.FixLimbToggle(GirlRightHand, true);
+			GirlRightHand.AnchorObj.transform.parent = controllers[Side.Right].transform;
+
         }
 
         void FPOV()
@@ -1239,10 +1229,5 @@ namespace SetParentKK
 		internal SteamVR_ControllerManager TrackersManager;
 		internal ViveTracker LeftFootTracker;
 		internal ViveTracker RightFootTracker;
-
-		internal GameObject Cube1;
-		internal GameObject Cube2;
-		internal GameObject Cube3;
-		internal GameObject Cube4;
 	}
 }
