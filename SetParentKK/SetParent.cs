@@ -601,6 +601,8 @@ namespace SetParentKK
 
 		internal void SetObjectColliders(Transform transform)
 		{
+			// MhamotoVR: Disable object colliders for proper FBT, so limbs don't get stuck
+			/*
 			MeshFilter meshFilter = transform.GetComponent<MeshFilter>();
 			if (!(meshFilter == null) && transform.Find("SPCollider") == null)
 			{
@@ -635,6 +637,7 @@ namespace SetParentKK
 					meshCollider.sharedMesh = meshFilter.mesh;
 				}
 			}
+			*/
 		}
 
 
