@@ -758,7 +758,19 @@ namespace SetParentKK
 
 			if (hideModel)
 			{
-				controller.transform.Find("Model").gameObject.SetActive(false);
+				GameObject Hand = controller.transform.Find("Model").gameObject;
+				Hand.SetActive(false);
+				//Hand.transform.localScale = new Vector3(0, 0, 0);
+				//Hand.GetComponent<Renderer>().enabled = false;
+				// Don't hide the menu and interaction pointer
+				/*
+				for (int i = 0; i < Hand.transform.childCount; i++)
+				{
+					//Hand.transform.GetChild(i).gameObject.SetActive(true);
+					//Hand.transform.GetChild(i).gameObject.transform.localScale = new Vector3(1, 1, 1);
+					Hand.transform.GetChild(i).gameObject.GetComponent<Renderer>().enabled = true;
+				}
+				*/
 
 				if (SetControllerCollider.Value && !limbs[(int)ParentSideMaleHand(notParentSide)].AnchorObj)
 				{
@@ -766,7 +778,20 @@ namespace SetParentKK
 				}
 
 				//MhamotoVR: Hide the other hand as well
-				OtherController.transform.Find("Model").gameObject.SetActive(false);
+				GameObject OtherHand = OtherController.transform.Find("Model").gameObject;
+				OtherHand.SetActive(false);
+				//OtherHand.transform.localScale = new Vector3(0, 0, 0);
+				//OtherHand.GetComponent<Renderer>().enabled = false;
+				// Don't hide the menu and interaction pointer
+				/*
+				for (int i = 0; i < OtherHand.transform.childCount; i++)
+				{
+					//OtherHand.transform.GetChild(i).gameObject.SetActive(true);
+					//OtherHand.transform.GetChild(i).gameObject.transform.localScale = new Vector3(1, 1, 1);
+					OtherHand.transform.GetChild(i).gameObject.GetComponent<Renderer>().enabled = true;
+				}
+				*/
+				
 
 				if (SetControllerCollider.Value && !limbs[(int)ParentSideMaleHand(!notParentSide)].AnchorObj)
 				{
@@ -938,11 +963,23 @@ namespace SetParentKK
 
 		void InitFBTCalibration()
         {
+			var myLogSource = BepInEx.Logging.Logger.CreateLogSource("MyLogSource");
+
+			//Gives us the character height slider as a fraction (e.g. slider 40 becomes 0.4)
+			float HeightFraction = female.GetShapeBodyValue(0);
+			//Formula found via Koikatsu3SizesCalculator, in cm. NOT ACCURATE FOR BONEMODDED CHARACTERS !!!
+			float VirtualGirlHeight = 150 + 27 * HeightFraction;
+			float DesiredWorldScale = UserHeight.Value / VirtualGirlHeight;
+
+			myLogSource.LogInfo("Virtual Girl Height: ");
+			myLogSource.LogInfo(VirtualGirlHeight);
+
 			//Teleport to girl's location
 			if (FPOVHeadDummy.transform.parent == null)
 			{
 				FPOVHeadDummy.transform.position = female_cf_j_head.transform.position;
 				FPOVHeadDummy.transform.rotation = female_cf_j_head.transform.rotation;
+				FPOVHeadDummy.transform.localScale = new Vector3(DesiredWorldScale, DesiredWorldScale, DesiredWorldScale);
 			}
 
 			cameraEye.transform.parent = FPOVHeadDummy.transform;
@@ -968,8 +1005,10 @@ namespace SetParentKK
 				NewTracker.Init(TrackersManager, this);
 				MyTrackers.Add(NewTracker);
             }
-
+			
 			FBTCalibrationStarted = true;
+
+			BepInEx.Logging.Logger.Sources.Remove(myLogSource);
 		}
 
 		void FBTCalibration()

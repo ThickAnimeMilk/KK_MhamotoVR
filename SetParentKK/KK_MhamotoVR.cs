@@ -23,6 +23,10 @@ namespace SetParentKK
 
 		#region Config properties
 
+		//[DisplayName("User Height")]
+		//[Description("The user height in cm, for scaling the Full Body Tracking")]
+		public static ConfigEntry<float> UserHeight { get; private set; }
+
 		//[DisplayName("Autofinish Timer")]
 		//[Description("When the girl's excitement gauge is above the cum threshold (70), she will cum after this set number of seconds \nSet this to 0 to disable the feature")]
 		//[AcceptableValueRange(0, float.MaxValue, false)]
@@ -173,6 +177,7 @@ namespace SetParentKK
 		{
 			const string s = "MySettings";
 
+			UserHeight = Config.Bind<float>(s, "User Height", 183f, "The user height in cm, for scaling the Full Body Tracking");
 			Finishcount = Config.Bind<float>(s, "Autofinish Timer", 0f,new ConfigDescription("When the girl's excitement gauge is above the cum threshold (70), she will cum after this set number of seconds Set this to 0 to disable the feature", new AcceptableValueRange<float>(0f, float.MaxValue)));
 			SetParentMode = Config.Bind<ParentMode>(s, "Control Mode", ParentMode.PositionAndAnimation, "Use the controller to control the girl's position, animation, or both");
 			DisableParentInput = Config.Bind<bool>(s, "Disable Input of Parent Controller", true, "If enabled, input for the parent controller will be turned off to prevent accidental input");
@@ -188,7 +193,11 @@ namespace SetParentKK
 			HideParentConAlways = Config.Bind<bool>(s, "Hide Parent Controller in Animation Only Mode", true, "Hides the parent controller even in animation only mode. Disable this to display parent controller in animation only mode while remain hidden in other modes.");
 			SetMaleFeetCollider = Config.Bind<bool>(s, "Make Males Feet Stick to Objects", true, "If enabled, male's feet will automatically grab onto objects when in contact. This is useful to prevent male's feet from clipping into the ground");
 			SyncMaleHands = Config.Bind<bool>(s, "Synchronize Males Hands with Controllers", true, "If enabled, the male's hands and arms are synchronized to the controllers by default when SetParentVR is enabled");
+			//MhamotoVR: disable this so FBT works correctly for the female when the male is visible
+			SyncMaleHands.Value = false;
 			SetParentMale = Config.Bind<bool>(s, "Synchronize Males Head with Headset", true, "If enabled, the male body will rotate to align his head with the headset");
+			//MhamotoVR: disable this so FBT works correctly for the female when the male is visible
+			SetParentMale.Value = false;
 			CalcController = Config.Bind<ControllerAnimMode>(s, "Which Controller Controls Animation", ControllerAnimMode.SetParentController, "Select which controller affects animation speed and switching between weak/strong motion");
 
 			LimbReleaseKey = Config.Bind("MyKeys", "Limb Release Key", new BepInEx.Configuration.KeyboardShortcut(KeyCode.None), "Press this key to release all limbs from attachment");
