@@ -750,7 +750,7 @@ namespace SetParentKK
 
 			if (FPOVStarted)
 			{
-				parentDummy.transform.parent = HipTracker.Tracker.transform;
+				parentDummy.transform.parent = HipTracker.TrackerCube.transform;
 			}
 			else
 			{ 
@@ -1105,17 +1105,17 @@ namespace SetParentKK
 
 			setParentObj.FixLimbToggle(GirlLeftHand, true);
 			// Snap to tracker before parenting
-			GirlLeftHand.AnchorObj.transform.position = LeftHandTracker.transform.position;
+			GirlLeftHand.AnchorObj.transform.position = LeftHandTracker.TrackerCube.transform.position;
 			//GirlLeftHand.AnchorObj.transform.rotation = controllers[Side.Left].transform.rotation;
-			GirlLeftHand.AnchorObj.transform.parent = LeftHandTracker.transform;
+			GirlLeftHand.AnchorObj.transform.parent = LeftHandTracker.TrackerCube.transform;
 
 			setParentObj.FixLimbToggle(GirlRightHand, true);
 			// Snap to tracker before parenting
-			GirlRightHand.AnchorObj.transform.position = RightHandTracker.transform.position;
+			GirlRightHand.AnchorObj.transform.position = RightHandTracker.TrackerCube.transform.position;
 			//GirlRightHand.AnchorObj.transform.rotation = controllers[Side.Right].transform.rotation;
-			GirlRightHand.AnchorObj.transform.parent = RightHandTracker.transform;
+			GirlRightHand.AnchorObj.transform.parent = RightHandTracker.TrackerCube.transform;
 
-			female_cf_j_head.transform.parent = HeadTracker.Tracker.transform;
+			female_cf_j_head.transform.parent = HeadTracker.TrackerCube.transform;
 			//FPOVHeadDummy.transform.position = female_cf_j_head.transform.position + female_cf_j_head.transform.forward * FBTHeadOffset;
 
 
