@@ -250,32 +250,33 @@ namespace SetParentKK
 						hideCanvas = true;
 						hideCount = 0f;
 
-						if (MhamotoCounter == 0)
+						switch(CurrentMhamotoState)
                         {
-							OriginalHMDParent = cameraEye.transform.parent;
-							OriginalLeftControllerParent = controllers[Side.Left].transform.parent;
-							OriginalRightControllerParent = controllers[Side.Right].transform.parent;
-						}
-
-						MhamotoCounter++;
-						MhamotoState = MhamotoCounter % 3;
-
-						switch(MhamotoState)
-                        {
-							case 0:
+							case MhamotoState.Inactive:
                                 {
-									ResetState();
-									break;
-                                }
-							case 1:
-                                {
-									ResetState();
+
+									OriginalHMDParent = cameraEye.transform.parent;
+									OriginalLeftControllerParent = controllers[Side.Left].transform.parent;
+									OriginalRightControllerParent = controllers[Side.Right].transform.parent;
+
 									InitFBTCalibration();
+
+									CurrentMhamotoState = MhamotoState.DesignatingTrackers;
 									break;
                                 }
-							case 2:
+							case MhamotoState.DesignatingTrackers:
                                 {
-									InitFPOV();
+									if (AllTrackersAssigned)
+									{
+										InitFPOV();
+										CurrentMhamotoState = MhamotoState.Active;
+									}
+									break;
+                                }
+							case MhamotoState.Active:
+                                {
+									ResetState();
+									CurrentMhamotoState = MhamotoState.Inactive;
 									break;
 								}
 							default:
@@ -749,7 +750,7 @@ namespace SetParentKK
 
 			if (FPOVStarted)
 			{
-				parentDummy.transform.parent = FindNearestTracker(target.transform.position).Tracker.transform;
+				parentDummy.transform.parent = HipTracker.Tracker.transform;
 			}
 			else
 			{ 
@@ -975,17 +976,17 @@ namespace SetParentKK
 			myLogSource.LogInfo(VirtualGirlHeight);
 
 			//Teleport to girl's location
-			if (FPOVHeadDummy.transform.parent == null)
-			{
-				FPOVHeadDummy.transform.position = female_cf_j_head.transform.position;
-				FPOVHeadDummy.transform.rotation = female_cf_j_head.transform.rotation;
-				FPOVHeadDummy.transform.localScale = new Vector3(DesiredWorldScale, DesiredWorldScale, DesiredWorldScale);
-			}
+			//if (FPOVHeadDummy.transform.parent == null)
+			//{
+			//	FPOVHeadDummy.transform.position = female_cf_j_head.transform.position + female_cf_j_head.transform.forward * FBTHeadOffset;
+			//	FPOVHeadDummy.transform.rotation = female_cf_j_head.transform.rotation;
+			//	FPOVHeadDummy.transform.localScale = new Vector3(DesiredWorldScale, DesiredWorldScale, DesiredWorldScale);
+			//}
 
-			cameraEye.transform.parent = FPOVHeadDummy.transform;
+			//cameraEye.transform.parent = FPOVHeadDummy.transform;
 
-			controllers[Side.Right].transform.parent = FPOVHeadDummy.transform;
-			controllers[Side.Left].transform.parent = FPOVHeadDummy.transform;
+			//controllers[Side.Right].transform.parent = FPOVHeadDummy.transform;
+			//controllers[Side.Left].transform.parent = FPOVHeadDummy.transform;
 
 			TrackersManager = FindObjectOfType<SteamVR_ControllerManager>();
 
@@ -1018,6 +1019,51 @@ namespace SetParentKK
 				UpdateTracker.LateUpdate();
             }
 
+			//Hold button for 5 seconds to hide/unhide floating menu
+			if (TriggerPressing(Side.Right))
+			{
+				TriggerTimer += Time.deltaTime;
+				if (TriggerTimer >= 5f)
+				{
+					ViveTracker resultTracker = FindNearestTracker(controllers[Side.Right].transform.position);
+					switch (CurrentTrackerBodyPart)
+                    {
+						case TrackerBodyPart.Head:
+							HeadTracker = resultTracker;
+							CurrentTrackerBodyPart = TrackerBodyPart.LeftHand;
+							break;
+						case TrackerBodyPart.LeftHand:
+							LeftHandTracker = resultTracker;
+							CurrentTrackerBodyPart = TrackerBodyPart.RightHand;
+							break;
+						case TrackerBodyPart.RightHand:
+							RightHandTracker = resultTracker;
+							CurrentTrackerBodyPart = TrackerBodyPart.Hip;
+							break;
+						case TrackerBodyPart.Hip:
+							HipTracker = resultTracker;
+							CurrentTrackerBodyPart = TrackerBodyPart.LeftFoot;
+							break;
+						case TrackerBodyPart.LeftFoot:
+							LeftFootTracker = resultTracker;
+							CurrentTrackerBodyPart = TrackerBodyPart.RightFoot;
+							break;
+						case TrackerBodyPart.RightFoot:
+							RightFootTracker = resultTracker;
+							CurrentTrackerBodyPart = TrackerBodyPart.Head;
+							break;
+						default:
+							break;
+                    }
+					// Hide Rendercube, as a form of feedback
+					var rend = resultTracker.TrackerCube.GetComponent<Renderer>();
+					rend.enabled = false;
+
+					TriggerTimer = 0;
+				}
+			}
+					
+
 		}
 
 
@@ -1028,10 +1074,10 @@ namespace SetParentKK
 
 			// Find tracker closest to bone
 			Limb GirlLeftFoot = setParentObj.limbs[(int)LimbName.FemaleLeftFoot];
-			LeftFootTracker = FindNearestTracker(GirlLeftFoot.AnimPos.position);
+			//LeftFootTracker = FindNearestTracker(GirlLeftFoot.AnimPos.position);
 
 			Limb GirlRightFoot = setParentObj.limbs[(int)LimbName.FemaleRightFoot];
-			RightFootTracker = FindNearestTracker(GirlRightFoot.AnimPos.position);
+			//RightFootTracker = FindNearestTracker(GirlRightFoot.AnimPos.position);
 
 			Limb GirlLeftHand = setParentObj.limbs[(int)LimbName.FemaleLeftHand];
 
@@ -1045,19 +1091,31 @@ namespace SetParentKK
 			SetP(false);
 
 			setParentObj.FixLimbToggle(GirlLeftFoot, true);
+			// Snap effector to tracker before parenting
+			GirlLeftFoot.AnchorObj.transform.position = LeftFootTracker.TrackerCube.transform.position;
+			//GirlLeftFoot.AnchorObj.transform.rotation = LeftFootTracker.TrackerCube.transform.rotation;
 			GirlLeftFoot.AnchorObj.transform.parent = LeftFootTracker.TrackerCube.transform;
 
 			setParentObj.FixLimbToggle(GirlRightFoot, true);
+			// Snap to tracker before parenting
+			GirlRightFoot.AnchorObj.transform.position = RightFootTracker.TrackerCube.transform.position;
+			//GirlRightFoot.AnchorObj.transform.rotation = RightFootTracker.TrackerCube.transform.rotation;
 			GirlRightFoot.AnchorObj.transform.parent = RightFootTracker.TrackerCube.transform;
 
 			setParentObj.FixLimbToggle(GirlLeftHand, true);
-			GirlLeftHand.AnchorObj.transform.parent = controllers[Side.Left].transform;
+			// Snap to tracker before parenting
+			GirlLeftHand.AnchorObj.transform.position = LeftHandTracker.transform.position;
+			//GirlLeftHand.AnchorObj.transform.rotation = controllers[Side.Left].transform.rotation;
+			GirlLeftHand.AnchorObj.transform.parent = LeftHandTracker.transform;
 
 			setParentObj.FixLimbToggle(GirlRightHand, true);
-			GirlRightHand.AnchorObj.transform.parent = controllers[Side.Right].transform;
+			// Snap to tracker before parenting
+			GirlRightHand.AnchorObj.transform.position = RightHandTracker.transform.position;
+			//GirlRightHand.AnchorObj.transform.rotation = controllers[Side.Right].transform.rotation;
+			GirlRightHand.AnchorObj.transform.parent = RightHandTracker.transform;
 
-
-			//female_cf_j_head.transform.parent = cameraEye.transform;
+			female_cf_j_head.transform.parent = HeadTracker.Tracker.transform;
+			//FPOVHeadDummy.transform.position = female_cf_j_head.transform.position + female_cf_j_head.transform.forward * FBTHeadOffset;
 
 
 		}
@@ -1101,8 +1159,7 @@ namespace SetParentKK
 			controllers[Side.Left].transform.parent = OriginalLeftControllerParent;
 
 
-			if (MhamotoCounter > 0)
-				UnsetP();
+			UnsetP();
 
 			//if (DakiModeStarted)
 				//female_cf_j_hips.transform.parent = OriginalFemaleParent;
@@ -1275,18 +1332,46 @@ namespace SetParentKK
 
 		int MhamotoCounter = 0;
 
-		int MhamotoState = 0;
+		enum MhamotoState
+        {
+			Inactive,
+			DesignatingTrackers,
+			Active
+        }
+		MhamotoState CurrentMhamotoState = MhamotoState.Inactive;
+
+		bool AllTrackersAssigned = false;
 
 		Transform OriginalHMDParent = null;
 		Transform OriginalLeftControllerParent = null;
 		Transform OriginalRightControllerParent = null;
 		Transform OriginalFemaleParent = null;
 
-		internal int NumTrackers = 3;
+		internal int NumTrackers = 6;
 		public List<uint> FoundTrackerIndices = new List<uint>();
 		public List<ViveTracker> MyTrackers = new List<ViveTracker>();
 		internal SteamVR_ControllerManager TrackersManager;
+
+		float TriggerTimer = 0f;
+
 		internal ViveTracker LeftFootTracker;
 		internal ViveTracker RightFootTracker;
+		internal ViveTracker HipTracker;
+		internal ViveTracker LeftHandTracker;
+		internal ViveTracker RightHandTracker;
+		internal ViveTracker HeadTracker;
+
+		enum TrackerBodyPart
+        {
+			Head,
+			LeftHand,
+			RightHand,
+			Hip,
+			LeftFoot,
+			RightFoot
+        }
+		TrackerBodyPart CurrentTrackerBodyPart = TrackerBodyPart.Head;
+
+		float FBTHeadOffset = 0.1f;
 	}
 }

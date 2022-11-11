@@ -32,3 +32,37 @@ F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\KK_MhamotoVR.dll
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\bin\Debug\KK_MhamotoVR.pdb
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.dll
 F:\Koikatsu VR hip mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.pdb
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\KK_MhamotoVR.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\KK_MhamotoVR.pdb
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\0Harmony.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\0Harmony_BepInEx4.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\Assembly-CSharp-firstpass.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\Assembly-CSharp.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\BepInEx.BepIn4Patcher.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\BepInEx.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\ConfigurationManager.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\UnityEngine.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\UnityEngine.UI.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\Mono.Cecil.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\MonoMod.Utils.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\MonoMod.RuntimeDetour.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\DOTween.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\TextMeshPro-1.0.55.56.0b12.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\Vectrosity.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\DOTween46.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\Sirenix.Utilities.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\Sirenix.OdinInspector.Attributes.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\Sirenix.Serialization.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\UnityEngine.Networking.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\System.Runtime.Serialization.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\Sirenix.Serialization.Config.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\0Harmony.xml
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\BepInEx.xml
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\ConfigurationManager.xml
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\MonoMod.Utils.xml
+F:\main KK mod\KK_MhamotoVR\SetParentKK\bin\Debug\MonoMod.RuntimeDetour.xml
+F:\main KK mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.csproj.AssemblyReference.cache
+F:\main KK mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.csproj.CoreCompileInputs.cache
+F:\main KK mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.csproj.CopyComplete
+F:\main KK mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.dll
+F:\main KK mod\KK_MhamotoVR\SetParentKK\obj\Debug\KK_MhamotoVR.pdb

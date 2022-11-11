@@ -47,7 +47,6 @@ namespace SetParentKK
             MyTrackedObject.SetDeviceIndex(TrackerIndex);
             TrackersManager.objects.SetValue(Tracker, TrackerIndex);
 
-
             //Attach Cube to tracker
             TrackerCube.transform.position = Tracker.transform.position;
             TrackerCube.transform.localScale = new Vector3(0.07f, 0.07f, 0.07f);
@@ -80,6 +79,7 @@ namespace SetParentKK
                     {
                         index = i;
                         SetParentObj.FoundTrackerIndices.Add(index);
+
                         return index;
                     }
                     else
@@ -95,6 +95,7 @@ namespace SetParentKK
                         {
                             index = i;
                             SetParentObj.FoundTrackerIndices.Add(index);
+
                             return index;
                         }
                     }
