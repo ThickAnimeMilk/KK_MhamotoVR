@@ -802,11 +802,11 @@ namespace SetParentKK
 
 			if (FPOVStarted)
 			{
-				//parentDummy.transform.position = MyTracker.transform.position;
-				//parentDummy.transform.rotation = MyTracker.transform.rotation;
-				parentDummy.transform.position = target.transform.position;
-				parentDummy.transform.rotation = target.transform.rotation;
-			}
+                parentDummy.transform.position = HipTracker.TrackerCube.transform.position;
+                parentDummy.transform.rotation = HipTracker.TrackerCube.transform.rotation;
+                //parentDummy.transform.position = target.transform.position;
+                //parentDummy.transform.rotation = target.transform.rotation;
+            }
 			else
 			{
 				parentDummy.transform.position = target.transform.position;
@@ -1029,30 +1029,48 @@ namespace SetParentKK
 					switch (CurrentTrackerBodyPart)
                     {
 						case TrackerBodyPart.Head:
-							HeadTracker = resultTracker;
-							CurrentTrackerBodyPart = TrackerBodyPart.LeftHand;
-							break;
+                            {
+								HeadTracker = resultTracker;
+								CurrentTrackerBodyPart = TrackerBodyPart.LeftHand;
+								break;
+							}
+							
 						case TrackerBodyPart.LeftHand:
-							LeftHandTracker = resultTracker;
-							CurrentTrackerBodyPart = TrackerBodyPart.RightHand;
-							break;
+                            {
+								LeftHandTracker = resultTracker;
+								CurrentTrackerBodyPart = TrackerBodyPart.RightHand;
+								break;
+							}
+							
 						case TrackerBodyPart.RightHand:
-							RightHandTracker = resultTracker;
-							CurrentTrackerBodyPart = TrackerBodyPart.Hip;
-							break;
+                            {
+								RightHandTracker = resultTracker;
+								CurrentTrackerBodyPart = TrackerBodyPart.Hip;
+								break;
+							}
+							
 						case TrackerBodyPart.Hip:
-							HipTracker = resultTracker;
-							CurrentTrackerBodyPart = TrackerBodyPart.LeftFoot;
-							break;
+                            {
+								HipTracker = resultTracker;
+								CurrentTrackerBodyPart = TrackerBodyPart.LeftFoot;
+								break;
+							}
+							
 						case TrackerBodyPart.LeftFoot:
-							LeftFootTracker = resultTracker;
-							CurrentTrackerBodyPart = TrackerBodyPart.RightFoot;
-							break;
+                            {
+								LeftFootTracker = resultTracker;
+								CurrentTrackerBodyPart = TrackerBodyPart.RightFoot;
+								break;
+							}
+							
 						case TrackerBodyPart.RightFoot:
-							RightFootTracker = resultTracker;
-							CurrentTrackerBodyPart = TrackerBodyPart.Head;
-							AllTrackersAssigned = true;
-							break;
+                            {
+								RightFootTracker = resultTracker;
+								CurrentTrackerBodyPart = TrackerBodyPart.Head;
+								AllTrackersAssigned = true;
+								break;
+							}
+							
 						default:
 							break;
                     }
@@ -1115,7 +1133,8 @@ namespace SetParentKK
 			//GirlRightHand.AnchorObj.transform.rotation = controllers[Side.Right].transform.rotation;
 			GirlRightHand.AnchorObj.transform.parent = RightHandTracker.TrackerCube.transform;
 
-			female_cf_j_head.transform.parent = HeadTracker.TrackerCube.transform;
+			//Causes gitaffe neck
+			//female_cf_j_head.transform.parent = HeadTracker.TrackerCube.transform;
 			//FPOVHeadDummy.transform.position = female_cf_j_head.transform.position + female_cf_j_head.transform.forward * FBTHeadOffset;
 
 
@@ -1125,7 +1144,7 @@ namespace SetParentKK
         {
 			// Head, ignore height component or it will probably strecth the neck to giraffe levels
 			// female_cf_j_head.transform.position = new Vector3(cameraEye.transform.position.x, female_cf_j_head.transform.position.y, cameraEye.transform.position.z);
-			female_cf_j_head.transform.rotation = cameraEye.transform.rotation;
+			//female_cf_j_head.transform.rotation = cameraEye.transform.rotation;
 			return;
         }
 
