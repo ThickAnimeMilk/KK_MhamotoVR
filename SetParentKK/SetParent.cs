@@ -1051,6 +1051,7 @@ namespace SetParentKK
 						case TrackerBodyPart.RightFoot:
 							RightFootTracker = resultTracker;
 							CurrentTrackerBodyPart = TrackerBodyPart.Head;
+							AllTrackersAssigned = true;
 							break;
 						default:
 							break;
